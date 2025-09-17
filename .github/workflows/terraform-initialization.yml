@@ -208,6 +208,7 @@ jobs:
             -var="bootstrap_mode=false"
             -var="update_apps=false"
             -var="auto_merge_pr=false"
+            
             -target=module.vpc_peering
             -target=module.security_groups
             -var="initialize_run=false"
