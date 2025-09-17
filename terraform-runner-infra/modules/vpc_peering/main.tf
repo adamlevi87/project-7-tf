@@ -64,14 +64,6 @@ resource "aws_vpc_peering_connection" "to_main" {
   #peer_region = try(data.terraform_remote_state.main.outputs.main_vpc_info.region, "fake-region") # fake-region fake region that will never be applied
   auto_accept = true  # Changed to true - will remove the module from the other TF job
 
-  requester {
-    allow_remote_vpc_dns_resolution = false
-  }
-
-  accepter {
-    allow_remote_vpc_dns_resolution = false
-  }
-
   tags = {
     Name        = "${var.project_tag}-${var.environment}-to-main-peering"
     Project     = var.project_tag
@@ -83,15 +75,15 @@ resource "aws_vpc_peering_connection" "to_main" {
   depends_on = [null_resource.validate_outputs_or_fail]
 }
 
-# resource "aws_vpc_peering_connection_options" "to_main" {
-#   vpc_peering_connection_id = aws_vpc_peering_connection.to_main.id
+resource "aws_vpc_peering_connection_options" "to_main" {
+  vpc_peering_connection_id = aws_vpc_peering_connection.to_main.id
 
-#   accepter {
-#     allow_remote_vpc_dns_resolution = false
-#   }
+  accepter {
+    allow_remote_vpc_dns_resolution = false
+  }
 
-#   depends_on = [ aws_vpc_peering_connection.to_main ]
-# }
+  depends_on = [ aws_vpc_peering_connection.to_main ]
+}
 
 # Add route to main VPC through peering connection
 resource "aws_route" "runner_to_main" {
