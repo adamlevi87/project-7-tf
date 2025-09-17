@@ -81,6 +81,8 @@ resource "aws_vpc_peering_connection_options" "to_main" {
   accepter {
     allow_remote_vpc_dns_resolution = false
   }
+
+  depends_on = [ aws_vpc_peering_connection.to_main ]
 }
 
 # Add route to main VPC through peering connection

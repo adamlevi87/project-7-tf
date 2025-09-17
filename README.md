@@ -35,6 +35,7 @@ Create a fine-grained PAT at: https://github.com/settings/personal-access-tokens
 - Pull requests (read/write)
 - Secrets (read/write)
 - Variables (read/write)
+- Administration (read/write) (mainly for the github self-hosted runner)
 
 ### 3. GitHub Application for ArgoCD
 
