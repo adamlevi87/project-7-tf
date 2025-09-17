@@ -228,7 +228,8 @@ module "node_groups" {
   # was not done using the Github running IAM role (manually or by mistake) (bootstrapper permissions)
   depends_on = [ 
     module.aws_auth_config,
-    module.security_groups
+    module.security_groups,
+    module.vpc_peering
   ]
 }
 
@@ -261,7 +262,7 @@ module "aws_auth_config" {
   depends_on = [
     module.eks,
     module.security_groups,
-    module.module.vpc_peering
+    module.vpc_peering
     #,
     #module.node_groups
   ]
