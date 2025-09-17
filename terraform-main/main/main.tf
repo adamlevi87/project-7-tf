@@ -33,28 +33,28 @@ module "vpc" {
     private_subnet_cidrs = local.private_subnet_cidrs
 }
 
-module "vpc_peering_acceptance" {
-  #count  = var.initialize_run ? 0 : 1
+# module "vpc_peering_acceptance" {
+#   #count  = var.initialize_run ? 0 : 1
 
-  source = "../modules/vpc_peering_acceptance"
+#   source = "../modules/vpc_peering_acceptance"
 
-  project_tag = var.project_tag
-  environment = var.environment
-  initialize_run = var.initialize_run
+#   project_tag = var.project_tag
+#   environment = var.environment
+#   initialize_run = var.initialize_run
   
-  # Route table IDs for creating routes 
-  peering_connection_id = try(data.terraform_remote_state.runner_infra.outputs.vpc_peering_connection_id, "fake-placeholder")
-  runner_vpc_cidr      = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
+#   # Route table IDs for creating routes 
+#   peering_connection_id = try(data.terraform_remote_state.runner_infra.outputs.vpc_peering_connection_id, "fake-placeholder")
+#   runner_vpc_cidr      = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
   
-  # Route table IDs for creating routes
-  private_route_table_ids = module.vpc.private_route_table_ids
-  #public_route_table_ids  = module.vpc.public_route_table_ids
+#   # Route table IDs for creating routes
+#   private_route_table_ids = module.vpc.private_route_table_ids
+#   #public_route_table_ids  = module.vpc.public_route_table_ids
   
-  # Get runner VPC CIDR from remote state
-  #runner_vpc_cidr = data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block
+#   # Get runner VPC CIDR from remote state
+#   #runner_vpc_cidr = data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block
 
-  depends_on = [module.vpc]
-}
+#   depends_on = [module.vpc]
+# }
 
 module "kms" {
   source = "../modules/kms"
@@ -228,7 +228,7 @@ module "aws_auth_config" {
 
   depends_on = [
     module.eks,
-    module.vpc_peering_acceptance,
+    #module.vpc_peering_acceptance,
     module.security_groups
     #,
     #module.node_groups

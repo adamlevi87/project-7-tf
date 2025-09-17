@@ -16,13 +16,13 @@ output "vpc_cidr_block" {
 # ================================
 # VPC Peering Outputs
 # ================================
-output "vpc_peering_connection_id" {
-  description = "ID of the VPC peering connection (if created)"
-  value       =  try(module.vpc_peering.vpc_peering_connection_id, null)
-  #value       =  length(module.vpc_peering) > 0 ? module.vpc_peering[0].vpc_peering_connection_id : null
-  #value       = var.enable_vpc_peering && var.main_vpc_id != "" ? module.vpc_peering[0].vpc_peering_connection_id : null
-  #value       = module.vpc_peering.vpc_peering_connection_id
-}
+# output "vpc_peering_connection_id" {
+#   description = "ID of the VPC peering connection (if created)"
+#   value       =  try(module.vpc_peering.vpc_peering_connection_id, null)
+#   #value       =  length(module.vpc_peering) > 0 ? module.vpc_peering[0].vpc_peering_connection_id : null
+#   #value       = var.enable_vpc_peering && var.main_vpc_id != "" ? module.vpc_peering[0].vpc_peering_connection_id : null
+#   #value       = module.vpc_peering.vpc_peering_connection_id
+# }
 
 output "runner_instance_role_arn" {
   description = "IAM role ARN for GitHub runner instances"
