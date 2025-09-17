@@ -55,7 +55,6 @@ resource "null_resource" "validate_outputs_or_fail" {
   }
 }
 
-
 # Create VPC Peering Connection Request
 resource "aws_vpc_peering_connection" "to_main" {
   #count = length(data.terraform_remote_state.main) > 0 ? 1 : 0
@@ -74,6 +73,14 @@ resource "aws_vpc_peering_connection" "to_main" {
   }
 
   depends_on = [null_resource.validate_outputs_or_fail]
+}
+
+resource "aws_vpc_peering_connection_options" "to_main" {
+  vpc_peering_connection_id = aws_vpc_peering_connection.to_main.id
+
+  accepter {
+    allow_remote_vpc_dns_resolution = false
+  }
 }
 
 # Add route to main VPC through peering connection
