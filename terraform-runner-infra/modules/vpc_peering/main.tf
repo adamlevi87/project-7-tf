@@ -68,7 +68,7 @@ resource "aws_vpc_peering_connection" "to_main" {
   #peer_vpc_id = "vpc-02511fd1cae3c0d6e"
   #peer_vpc_id = try(data.terraform_remote_state.main.outputs.main_vpc_info.vpc_id, "fake-id")  # fake-id Prevents validation error
   #peer_vpc_id = data.terraform_remote_state.main.outputs.main_vpc_info.vpc_id
-  peer_vpc_id = length(data.terraform_remote_state.main.outputs) > 0 ? data.terraform_remote_state.main.outputs.vpc_id : "fallback"
+  peer_vpc_id = length(data.terraform_remote_state.main.outputs.main_vpc_info.vpc_id) > 0 ? data.terraform_remote_state.main.outputs.main_vpc_info.vpc_id : "fallback"
   #peer_region = try(data.terraform_remote_state.main.outputs.main_vpc_info.region, "fake-region") # fake-region fake region that will never be applied
   #auto_accept = true  # Changed to true - will remove the module from the other TF job
 
