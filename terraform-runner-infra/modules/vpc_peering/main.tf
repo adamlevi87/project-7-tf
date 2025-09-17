@@ -70,7 +70,7 @@ resource "null_resource" "remote_state_trigger" {
   # We provide a map of attributes from the remote state.
   # If any of these attributes change, the null_resource is marked for replacement.
   # This replacement triggers the 'depends_on' relationship below.
-  triggers = {
+  
     # Reference the specific output that is causing the problem.
     # We include `data.terraform_remote_state.main.outputs.vpc_id`
     # as the value. Terraform will see this as a dependency.
@@ -78,7 +78,7 @@ resource "null_resource" "remote_state_trigger" {
     
     # You can include other outputs here if they also cause issues.
     # subnet_ids_trigger = join(",", data.terraform_remote_state.main.outputs.subnet_ids)
-  }
+  
 }
 
 # Create VPC Peering Connection Request
