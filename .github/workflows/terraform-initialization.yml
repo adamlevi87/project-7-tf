@@ -296,17 +296,17 @@ jobs:
       
 
       ##### Important - this is a bootstrap workflow
-      ##### triggering this step with a plan might fail if the other  steps did not run
+      ##### triggering this step with a plan might fail if the other steps did not run
       ##### as the EKS has no public endpoinds and the runner must be alive and available
-      ##### for the workflow that we trigger in step 4
-      - name: Step 4 - Trigger Full Main Workflow on Runner
+      ##### as this step triggers the main TF workflow that must be run on the Github self-hosted runner
+      - name: Step 3 - Trigger Full Main Workflow on Runner
         # cannot run a full PLAN, an apply on step 1+2 is a must
         #if: github.event.inputs.action != 'plan'
         env:
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
         run: |
           echo "================================================"
-          echo "STEP 4: Triggering Full Main Workflow on Runner"
+          echo "STEP 3: Triggering Full Main Workflow on Runner"
           echo "Environment: ${{ github.event.inputs.env }}"
           echo "Plan Full Runs: ${{ github.event.inputs.plan_full_runs }}"
           echo "================================================"
