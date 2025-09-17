@@ -78,7 +78,7 @@ resource "aws_vpc_peering_connection" "to_main" {
 
 # Add route to main VPC through peering connection
 resource "aws_route" "runner_to_main" {
-  count = length(data.terraform_remote_state.main) > 0 ? 1 : 0
+  #count = length(data.terraform_remote_state.main) > 0 ? 1 : 0
 
   route_table_id            = var.source_route_table_id
   destination_cidr_block = try(data.terraform_remote_state.main.outputs.main_vpc_info.vpc_cidr_block, "10.255.255.0/24") # 10.255.255.0 - fake cidr will never be applied
