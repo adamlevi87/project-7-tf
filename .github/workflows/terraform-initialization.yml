@@ -297,7 +297,12 @@ jobs:
               echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
               ;;
           esac
+      
 
+      ##### Important - this is a bootstrap workflow
+      ##### triggering this step with a plan might fail if the other  steps did not run
+      ##### as the EKS has no public endpoinds and the runner must be alive and available
+      ##### for the workflow that we trigger in step 4
       - name: Step 4 - Trigger Full Main Workflow on Runner
         # cannot run a full PLAN, an apply on step 1+2 is a must
         #if: github.event.inputs.action != 'plan'
@@ -315,19 +320,19 @@ jobs:
             true)
               ACTION="plan"
               echo "Triggering main workflow with PLAN action..."
-              RUNNER_TYPE="ubuntu-latest"  # Plans can run anywhere
+              
               ;;
             false)
               ACTION="apply"
               echo "Triggering main workflow with APPLY action..."
-              RUNNER_TYPE="self-hosted"    # Apply runs on your runners
+              
               ;;
             *)
               echo "Invalid plan_full_runs value: ${{ github.event.inputs.plan_full_runs }}"
               exit 1
               ;;
           esac
-          
+          RUNNER_TYPE="self-hosted"
           # Trigger the main deploy.yml workflow
           curl -X POST \
             -H "Authorization: Bearer $TOKEN_GITHUB" \
