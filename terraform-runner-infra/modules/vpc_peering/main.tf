@@ -56,43 +56,15 @@ resource "null_resource" "validate_outputs_or_fail" {
   }
 }
 
-# Summary - TF cannot guarentee remote state values for some resource type
-# in our case, peer_vpc_id is always marked as - known after apply/ computed / tainted
-# the workaround is - link the output from terraform_remote_state
-# into this null resource and add a depends on to the actual block we are protecting (in this case aws_vpc_peering_connection)
-# terraform PLAN marks the resource as changed (peer_vpc_id)
-# but also the null_resource block as changed (as it relies on it)
-# aws_vpc_peering_connection - with the depends on , makes TF understand it cannot determine peer_vpc_id
-# on the apply-> the null resource will get the identical update from the remote_state output
-# and then, when its time to handle the protected resource-> terraform will realize the value did not change
-resource "null_resource" "remote_state_trigger" {
-  # The 'triggers' argument is the key here.
-  # We provide a map of attributes from the remote state.
-  # If any of these attributes change, the null_resource is marked for replacement.
-  # This replacement triggers the 'depends_on' relationship below.
-  
-    # Reference the specific output that is causing the problem.
-    # We include `data.terraform_remote_state.main.outputs.vpc_id`
-    # as the value. Terraform will see this as a dependency.
-    vpc_id_trigger = try(data.terraform_remote_state.main.outputs.vpc_id, "fake-id")
-    
-    # You can include other outputs here if they also cause issues.
-    # subnet_ids_trigger = join(",", data.terraform_remote_state.main.outputs.subnet_ids)
-  
-}
 
 # Create VPC Peering Connection Request
 resource "aws_vpc_peering_connection" "to_main" {
   #count = length(data.terraform_remote_state.main) > 0 ? 1 : 0
 
   vpc_id      = var.source_vpc_id
-  #peer_vpc_id = local.peer_vpc_var
-  #peer_vpc_id = "vpc-02511fd1cae3c0d6e"
-  #peer_vpc_id = try(data.terraform_remote_state.main.outputs.main_vpc_info.vpc_id, "fake-id")  # fake-id Prevents validation error
-  peer_vpc_id = data.terraform_remote_state.main.outputs.main_vpc_info.vpc_id
-  
+  peer_vpc_id = try(data.terraform_remote_state.main.outputs.main_vpc_info.vpc_id, "fake-id")  # fake-id Prevents validation error
   #peer_region = try(data.terraform_remote_state.main.outputs.main_vpc_info.region, "fake-region") # fake-region fake region that will never be applied
-  #auto_accept = true  # Changed to true - will remove the module from the other TF job
+  auto_accept = true  # Changed to true - will remove the module from the other TF job
 
   tags = {
     Name        = "${var.project_tag}-${var.environment}-to-main-peering"
@@ -103,8 +75,7 @@ resource "aws_vpc_peering_connection" "to_main" {
   }
 
   depends_on = [
-    null_resource.validate_outputs_or_fail,
-    null_resource.remote_state_trigger
+    null_resource.validate_outputs_or_fail
   ]
 }
 
