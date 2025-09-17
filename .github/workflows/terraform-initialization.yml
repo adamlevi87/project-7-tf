@@ -209,8 +209,6 @@ jobs:
             -var="update_apps=false"
             -var="auto_merge_pr=false"
             #-target=module.vpc_peering_acceptance
-            
-            -target=module.aws_auth_config
             -target=module.security_groups
             -var="initialize_run=false"
           )
