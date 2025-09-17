@@ -1,4 +1,4 @@
-# terraform-main/modules/vpc_peering_acceptance/variables.tf
+# terraform-main/modules/vpc_peering/variables.tf
 
 variable "project_tag" {
   description = "Project tag for resource naming"
@@ -10,10 +10,10 @@ variable "environment" {
   type        = string
 }
 
-variable "initialize_run" {
-  description = "Whether this is an initialization run (true = deploy basics only, false = deploy everything)"
-  type        = bool
-}
+# variable "initialize_run" {
+#   description = "Whether this is an initialization run (true = deploy basics only, false = deploy everything)"
+#   type        = bool
+# }
 
 variable "peering_connection_id" {
   description = "VPC peering connection ID from runner infrastructure (via remote state)"

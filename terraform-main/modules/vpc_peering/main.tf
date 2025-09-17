@@ -1,4 +1,4 @@
-# terraform-main/modules/vpc_peering_acceptance/main.tf
+# terraform-main/modules/vpc_peering/main.tf
 
 terraform {
   required_providers {
@@ -67,23 +67,33 @@ locals {
 }
 
 
-
-resource "aws_vpc_peering_connection_accepter" "main" {
-  #count = var.initialize_run ? 0 : 1
+resource "aws_route" "main_to_runner_private" {
+  #count = var.initialize_run ? 0 : length(var.private_route_table_ids)
+  count = length(var.private_route_table_ids)
   
+  route_table_id            = var.private_route_table_ids[count.index]
+  destination_cidr_block    = var.runner_vpc_cidr  # No try needed!
   vpc_peering_connection_id = var.peering_connection_id
-  auto_accept               = true
-
-  tags = {
-    Name        = "${var.project_tag}-${var.environment}-accept-runner-peering"
-    Project     = var.project_tag
-    Environment = var.environment
-    Purpose     = "accept-runner-vpc-peering"
-    Side        = "accepter"
-  }
 
   depends_on = [null_resource.validate_peering_outputs]
 }
+
+# resource "aws_vpc_peering_connection_accepter" "main" {
+#   #count = var.initialize_run ? 0 : 1
+  
+#   vpc_peering_connection_id = var.peering_connection_id
+#   auto_accept               = true
+
+#   tags = {
+#     Name        = "${var.project_tag}-${var.environment}-accept-runner-peering"
+#     Project     = var.project_tag
+#     Environment = var.environment
+#     Purpose     = "accept-runner-vpc-peering"
+#     Side        = "accepter"
+#   }
+
+#   depends_on = [null_resource.validate_peering_outputs]
+# }
 
 # # Accept the peering connection from runner infrastructure
 # resource "aws_vpc_peering_connection_accepter" "runner_peering" {
@@ -101,17 +111,6 @@ resource "aws_vpc_peering_connection_accepter" "main" {
 #     Side        = "accepter"
 #   }
 # }
-
-resource "aws_route" "main_to_runner_private" {
-  #count = var.initialize_run ? 0 : length(var.private_route_table_ids)
-  count = length(var.private_route_table_ids)
-  
-  route_table_id            = var.private_route_table_ids[count.index]
-  destination_cidr_block    = var.runner_vpc_cidr  # No try needed!
-  vpc_peering_connection_id = var.peering_connection_id
-
-  depends_on = [aws_vpc_peering_connection_accepter.main]
-}
 
 # # Add routes to runner VPC from main VPC private subnets
 # resource "aws_route" "main_to_runner_private" {

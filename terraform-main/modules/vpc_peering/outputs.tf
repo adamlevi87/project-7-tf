@@ -1,4 +1,4 @@
-# terraform-main/modules/vpc_peering_acceptance/outputs.tf
+# terraform-main/modules/vpc_peering/outputs.tf
 
 # output "peering_connection_id" {
 #   description = "ID of the accepted peering connection"
@@ -21,13 +21,13 @@
 #   } : {}
 # }
 
-# Output main VPC information for runner infrastructure to use
-output "main_vpc_info" {
-  description = "Main VPC information for runner infrastructure"
-  value = {
-    private_route_table_ids = var.private_route_table_ids
-  }
-}
+
+# output "main_vpc_info" {
+#   description = "Main VPC information for runner infrastructure"
+#   value = {
+#     private_route_table_ids = var.private_route_table_ids
+#   }
+# }
 
 # output "peering_connection_id" {
 #   description = "VPC peering connection ID"
