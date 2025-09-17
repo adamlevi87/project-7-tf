@@ -1,0 +1,209 @@
+name: Terraform Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Environment to manage"
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      action:
+        description: "Terraform action to perform"
+        required: true
+        default: plan
+        type: choice
+        options:
+          - plan
+          - apply
+          - plan-and-apply
+          - destroy
+      gitops_mode:
+        description: "GitOps configuration mode"
+        required: true
+        default: none
+        type: choice
+        options:
+          - none              # No GitOps changes
+          - update-infra      # Update infrastructure values only
+          - bootstrap         # Full bootstrap (create all files)
+      auto_merge:
+        description: "Auto-merge GitOps PRs"
+        required: false
+        default: false
+        type: boolean
+      runner_type:
+        description: "Runner type to use"
+        required: false
+        default: "ubuntu-latest"
+        type: choice
+        options:
+          - ubuntu-latest
+          # self hosted is a custom label that our runner gets
+          # (user-data.sh config.sh part)
+          - self-hosted
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+
+jobs:
+  terraform:
+    runs-on: ${{ github.event.inputs.runner_type }}
+
+    permissions:
+      contents: read
+      id-token: write  # Required for OIDC
+      
+    defaults:
+      run:
+        working-directory: terraform-main/main/
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init -backend-config=../environments/${{ github.event.inputs.env }}/backend.config
+
+      - name: Set GitOps Variables
+        id: gitops_vars
+        run: |
+          case "${{ github.event.inputs.gitops_mode }}" in
+            none)
+              echo "bootstrap_mode=false" >> $GITHUB_OUTPUT
+              echo "update_apps=false" >> $GITHUB_OUTPUT
+              ;;
+            update-infra)
+              echo "bootstrap_mode=false" >> $GITHUB_OUTPUT
+              echo "update_apps=true" >> $GITHUB_OUTPUT
+              ;;
+            bootstrap)
+              echo "bootstrap_mode=true" >> $GITHUB_OUTPUT
+              echo "update_apps=false" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Set Environment Suffix
+        id: env_suffix
+        run: |
+          case "${{ github.event.inputs.env }}" in
+            dev)
+              echo "suffix=DEV" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "suffix=STAGING" >> $GITHUB_OUTPUT
+              ;;
+            prod)
+              echo "suffix=PROD" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "❌ ERROR: Invalid environment '${{ github.event.inputs.env }}'"
+              echo "Must be one of: dev, staging, prod"
+              exit 1
+              ;;
+          esac
+
+      - name: Check jq availability
+        run: which jq && jq --version || echo "jq not found"
+
+      - name: Terraform Action
+        env:
+          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          ARGOCD_APP_ID: ${{ secrets[format('ARGOCD_APP_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          ARGOCD_INSTALLATION_ID: ${{ secrets[format('ARGOCD_INSTALLATION_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          ARGOCD_PRIVATE_KEY_B64: ${{ secrets[format('ARGOCD_PRIVATE_KEY_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          OAUTH_GITHUB_CLIENT_ID: ${{ secrets[format('OAUTH_GITHUB_CLIENT_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets[format('OAUTH_GITHUB_CLIENT_SECRET_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          
+        run: |
+          COMMON_VARS=(
+            -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
+            -var="github_token=$TOKEN_GITHUB"
+            -var="aws_region=$AWS_REGION"
+            -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
+            -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
+            -var="argocd_app_id=$ARGOCD_APP_ID"
+            -var="argocd_installation_id=$ARGOCD_INSTALLATION_ID"
+            -var="argocd_private_key_b64=$ARGOCD_PRIVATE_KEY_B64"
+            -var="github_oauth_client_id=$OAUTH_GITHUB_CLIENT_ID"
+            -var="github_oauth_client_secret=$OAUTH_GITHUB_CLIENT_SECRET"
+            -var="bootstrap_mode=${{ steps.gitops_vars.outputs.bootstrap_mode }}"
+            -var="update_apps=${{ steps.gitops_vars.outputs.update_apps }}"
+            -var="auto_merge_pr=${{ github.event.inputs.auto_merge }}"
+          )
+          
+          echo "================================================"
+          echo "Environment: ${{ github.event.inputs.env }}"
+          echo "Action: ${{ github.event.inputs.action }}"
+          echo "GitOps Mode: ${{ github.event.inputs.gitops_mode }}"
+          echo "Bootstrap: ${{ steps.gitops_vars.outputs.bootstrap_mode }}"
+          echo "Update Apps: ${{ steps.gitops_vars.outputs.update_apps }}"
+          echo "Auto Merge: ${{ github.event.inputs.auto_merge }}"
+          echo "================================================"
+          
+          case "${{ github.event.inputs.action }}" in
+            plan)
+              terraform plan "${COMMON_VARS[@]}"
+              ;;
+            apply)
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            plan-and-apply)
+              terraform plan "${COMMON_VARS[@]}"
+              echo "================================================"
+              echo "Plan complete. Proceeding with apply..."
+              echo "================================================"
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            destroy)
+              terraform destroy -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            *)
+              echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
+              ;;
+          esac
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## 🚀 Terraform Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Parameter | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Environment** | \`${{ github.event.inputs.env }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Action** | \`${{ github.event.inputs.action }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **GitOps Mode** | \`${{ github.event.inputs.gitops_mode }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Bootstrap Mode** | \`${{ steps.gitops_vars.outputs.bootstrap_mode }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Update Apps** | \`${{ steps.gitops_vars.outputs.update_apps }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Auto-merge PRs** | \`${{ github.event.inputs.auto_merge }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ github.event.inputs.gitops_mode }}" == "bootstrap" ]]; then
+            echo "### 📝 Bootstrap Mode" >> $GITHUB_STEP_SUMMARY
+            echo "Created all GitOps configuration files including:" >> $GITHUB_STEP_SUMMARY
+            echo "- ArgoCD Project and App-of-Apps (reference)" >> $GITHUB_STEP_SUMMARY
+            echo "- Application manifests" >> $GITHUB_STEP_SUMMARY
+            echo "- Infrastructure and application values" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ github.event.inputs.gitops_mode }}" == "update-infra" ]]; then
+            echo "### 🔄 Infrastructure Update Mode" >> $GITHUB_STEP_SUMMARY
+            echo "Updated infrastructure values only" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⚡ No GitOps Changes" >> $GITHUB_STEP_SUMMARY
+            echo "Terraform changes only - no GitOps modifications" >> $GITHUB_STEP_SUMMARY
+          fi
