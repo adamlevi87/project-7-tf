@@ -62,7 +62,7 @@ resource "aws_vpc_peering_connection" "to_main" {
   vpc_id      = var.source_vpc_id
   peer_vpc_id = try(data.terraform_remote_state.main.outputs.main_vpc_info.vpc_id, "fake-id")  # fake-id Prevents validation error
   peer_region = try(data.terraform_remote_state.main.outputs.main_vpc_info.region, "fake-region") # fake-region fake region that will never be applied
-  auto_accept = false  # Will be accepted by the main project
+  auto_accept = true  # Changed to true - will remove the module from the other TF job
 
   tags = {
     Name        = "${var.project_tag}-${var.environment}-to-main-peering"
