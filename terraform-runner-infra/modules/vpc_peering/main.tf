@@ -55,13 +55,18 @@ resource "null_resource" "validate_outputs_or_fail" {
   }
 }
 
+locals {
+  peer_vpc_var = "vpc-02511fd1cae3c0d6e"
+}
+
 # Create VPC Peering Connection Request
 resource "aws_vpc_peering_connection" "to_main" {
   #count = length(data.terraform_remote_state.main) > 0 ? 1 : 0
 
   vpc_id      = var.source_vpc_id
+  peer_vpc_id = local.peer_vpc_var
   #peer_vpc_id = "vpc-02511fd1cae3c0d6e"
-  peer_vpc_id = try(data.terraform_remote_state.main.outputs.main_vpc_info.vpc_id, "fake-id")  # fake-id Prevents validation error
+  #peer_vpc_id = try(data.terraform_remote_state.main.outputs.main_vpc_info.vpc_id, "fake-id")  # fake-id Prevents validation error
   #peer_region = try(data.terraform_remote_state.main.outputs.main_vpc_info.region, "fake-region") # fake-region fake region that will never be applied
   #auto_accept = true  # Changed to true - will remove the module from the other TF job
 
