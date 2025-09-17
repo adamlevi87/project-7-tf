@@ -199,11 +199,13 @@ module "node_groups" {
   private_subnet_ids   = module.vpc.private_subnet_ids
   launch_template_ids =  module.launch_templates.launch_template_ids
 
-  # Created to force auth config to be applied before node_groups creation
-  # in order to prevent any helm/kubernetes block from failing due to limited permissions
-  # especially relevant if initial creation was not done using the Github running IAM role
+  # Created to force the modules: auth config and security group, to be applied before node_groups creation
+  # in order to prevent any helm/kubernetes block from failing due to limited permissions or network blocks
+  # its especially relevant for aws auth - if initial creation of the TF resources
+  # was not done using the Github running IAM role (manually or by mistake) (bootstrapper permissions)
   depends_on = [ 
-    module.aws_auth_config
+    module.aws_auth_config,
+    module.security_groups
   ]
 }
 
