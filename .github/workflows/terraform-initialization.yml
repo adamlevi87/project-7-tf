@@ -179,62 +179,62 @@ jobs:
               ;;
           esac
     
-      # - name: Step 3 - Targeted Main Infrastructure - accept peering
-      #   env:
-      #     AWS_REGION: ${{ env.AWS_REGION }}
-      #     PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
-      #     AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-      #   run: |
-      #     echo "================================================"
-      #     echo "STEP 3: Targeted Main Infrastructure accept peering"
-      #     echo "Environment: ${{ github.event.inputs.env }}"
-      #     echo "================================================"
+      - name: Step 3 - Targeted Main Infrastructure - accept peering
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        run: |
+          echo "================================================"
+          echo "STEP 3: Targeted Main Infrastructure accept peering"
+          echo "Environment: ${{ github.event.inputs.env }}"
+          echo "================================================"
 
-      #     cd terraform-main/main/
+          cd terraform-main/main/
           
-      #     terraform init -backend-config=../environments/${{ github.event.inputs.env }}/backend.config
+          terraform init -backend-config=../environments/${{ github.event.inputs.env }}/backend.config
 
-      #     COMMON_VARS=(
-      #       -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
-      #       -var="github_token=$TOKEN_GITHUB"
-      #       -var="aws_region=$AWS_REGION"
-      #       -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
-      #       -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
-      #       -var="argocd_app_id=$ARGOCD_APP_ID"
-      #       -var="argocd_installation_id=$ARGOCD_INSTALLATION_ID"
-      #       -var="argocd_private_key_b64=$ARGOCD_PRIVATE_KEY_B64"
-      #       -var="github_oauth_client_id=$OAUTH_GITHUB_CLIENT_ID"
-      #       -var="github_oauth_client_secret=$OAUTH_GITHUB_CLIENT_SECRET"
-      #       -var="bootstrap_mode=false"
-      #       -var="update_apps=false"
-      #       -var="auto_merge_pr=false"
-      #       #-target=module.vpc_peering_acceptance
-      #       -target=module.security_groups
-      #       -var="initialize_run=false"
-      #     )
+          COMMON_VARS=(
+            -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
+            -var="github_token=$TOKEN_GITHUB"
+            -var="aws_region=$AWS_REGION"
+            -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
+            -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
+            -var="argocd_app_id=$ARGOCD_APP_ID"
+            -var="argocd_installation_id=$ARGOCD_INSTALLATION_ID"
+            -var="argocd_private_key_b64=$ARGOCD_PRIVATE_KEY_B64"
+            -var="github_oauth_client_id=$OAUTH_GITHUB_CLIENT_ID"
+            -var="github_oauth_client_secret=$OAUTH_GITHUB_CLIENT_SECRET"
+            -var="bootstrap_mode=false"
+            -var="update_apps=false"
+            -var="auto_merge_pr=false"
+            -target=module.vpc_peering
+            -target=module.security_groups
+            -var="initialize_run=false"
+          )
           
-      #     case "${{ github.event.inputs.action }}" in
-      #       plan)
-      #         terraform plan "${COMMON_VARS[@]}"
-      #         ;;
-      #       apply)
-      #         echo "step -3 - applying!"
-      #         terraform apply -auto-approve "${COMMON_VARS[@]}"
-      #         ;;
-      #       plan-and-apply)
-      #         terraform plan "${COMMON_VARS[@]}"
-      #         echo "================================================"
-      #         echo "Plan complete. Proceeding with apply..."
-      #         echo "================================================"
-      #         terraform apply -auto-approve "${COMMON_VARS[@]}"
-      #         ;;
-      #       # destroy)
-      #       #   terraform destroy -auto-approve "${COMMON_VARS[@]}"
-      #       #   ;;
-      #       *)
-      #         echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
-      #         ;;
-      #     esac
+          case "${{ github.event.inputs.action }}" in
+            plan)
+              terraform plan "${COMMON_VARS[@]}"
+              ;;
+            apply)
+              echo "step -3 - applying!"
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            plan-and-apply)
+              terraform plan "${COMMON_VARS[@]}"
+              echo "================================================"
+              echo "Plan complete. Proceeding with apply..."
+              echo "================================================"
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            # destroy)
+            #   terraform destroy -auto-approve "${COMMON_VARS[@]}"
+            #   ;;
+            *)
+              echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
+              ;;
+          esac
 
       # - name: Step 3e - Targeted Main Infrastructure - extras
       #   env:
@@ -299,14 +299,14 @@ jobs:
       ##### triggering this step with a plan might fail if the other steps did not run
       ##### as the EKS has no public endpoinds and the runner must be alive and available
       ##### as this step triggers the main TF workflow that must be run on the Github self-hosted runner
-      - name: Step 3 - Trigger Full Main Workflow on Runner
+      - name: Step 4 - Trigger Full Main Workflow on Runner
         # cannot run a full PLAN, an apply on step 1+2 is a must
         #if: github.event.inputs.action != 'plan'
         env:
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
         run: |
           echo "================================================"
-          echo "STEP 3: Triggering Full Main Workflow on Runner"
+          echo "STEP 4: Triggering Full Main Workflow on Runner"
           echo "Environment: ${{ github.event.inputs.env }}"
           echo "Plan Full Runs: ${{ github.event.inputs.plan_full_runs }}"
           echo "================================================"
