@@ -210,8 +210,11 @@ jobs:
             -var="auto_merge_pr=false"
             
             -target=module.vpc_peering
+            
+            # Due to something i dont understand
+            # security group needs this protection
             -target=module.security_groups
-            -var="initialize_run=false"
+            -var="skip_runner_integration=true"
           )
           
           case "${{ github.event.inputs.action }}" in

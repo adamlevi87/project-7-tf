@@ -670,3 +670,9 @@ variable "initialize_run" {
   description = "Whether this is an initialization run (true = deploy basics only, false = deploy everything)"
   type        = bool
 }
+
+variable "skip_runner_integration" {
+  description = "Skip runner integration during initial planning"
+  type        = bool
+  default     = false
+}

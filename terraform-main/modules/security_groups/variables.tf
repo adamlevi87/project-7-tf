@@ -20,6 +20,12 @@ variable "initialize_run" {
   type        = bool
 }
 
+variable "skip_runner_integration" {
+  description = "Skip runner integration during initial planning"
+  type        = bool
+  default     = false
+}
+
 # variable "runner_vpc_cidr" {
 #   description = "CIDR block of the runner VPC (via remote state)"
 #   type        = string

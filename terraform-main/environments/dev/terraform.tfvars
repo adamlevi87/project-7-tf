@@ -10,6 +10,7 @@ aws_region = "us-east-1"
 environment = "dev"
 project_tag = "project-6"
 initialize_run = false
+skip_runner_integration=false
 # ================================
 # VPC Configurations
 # ================================
