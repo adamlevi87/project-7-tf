@@ -10,6 +10,11 @@ output "vpc_id" {
   description = "VPC ID"
 }
 
+output "vpc_region" {
+  value       = var.aws_region
+  description = "VPC region"
+}
+
 output "vpc_cidr_block" {
   value       = aws_vpc.main.cidr_block
   description = "CIDR block of the VPC"
