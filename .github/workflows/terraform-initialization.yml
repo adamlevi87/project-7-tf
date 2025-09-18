@@ -74,14 +74,14 @@ jobs:
               ;;
           esac
 
-      - name: Step 1 - Targeted Main Infrastructure
+      - name: Step 1 - 1st targeted terraform-main run
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
           PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         run: |
           echo "================================================"
-          echo "STEP 1: Targeted Main Infrastructure"
+          echo "STEP 1: 1st targeted terraform-main run"
           echo "Environment: ${{ github.event.inputs.env }}"
           echo "================================================"
 
@@ -143,7 +143,7 @@ jobs:
           OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets[format('OAUTH_GITHUB_CLIENT_SECRET_TF_{0}', steps.env_suffix.outputs.suffix)] }}
         run: |
           echo "================================================"
-          echo "STEP 2: Full Infrastructure Apply"
+          echo "STEP 2: Full terraform-runner-infra run"
           echo "Environment: ${{ github.event.inputs.env }}"
           echo "================================================"
           
@@ -179,14 +179,14 @@ jobs:
               ;;
           esac
     
-      - name: Step 3 - Targeted Main Infrastructure - accept peering
+      - name: Step 3 - 2nd targeted terraform-main run
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
           PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         run: |
           echo "================================================"
-          echo "STEP 3: Targeted Main Infrastructure accept peering"
+          echo "STEP 3: 2nd targeted terraform-main run"
           echo "Environment: ${{ github.event.inputs.env }}"
           echo "================================================"
 
