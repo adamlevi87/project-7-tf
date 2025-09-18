@@ -35,7 +35,7 @@ resource "null_resource" "validate_outputs_or_fail" {
     command = <<-EOF
       # Check all required outputs for VPC peering
       VPC_ID="${try(data.terraform_remote_state.main.outputs.main_vpc_info.vpc_id, "")}"
-      #REGION="${try(data.terraform_remote_state.main.outputs.main_vpc_info.region, "")}"
+      REGION="${try(data.terraform_remote_state.main.outputs.main_vpc_info.region, "")}"
       VPC_CIDR="${try(data.terraform_remote_state.main.outputs.main_vpc_info.vpc_cidr_block, "")}"
       
       if [ -z "$VPC_ID" ] || [ -z "$VPC_CIDR" ] || [ -z "$REGION" ]; then
