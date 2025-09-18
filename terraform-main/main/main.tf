@@ -56,74 +56,74 @@ module "vpc_peering" {
   depends_on = [module.vpc]
 }
 
-module "kms" {
-  source = "../modules/kms"
+# module "kms" {
+#   source = "../modules/kms"
 
-  project_tag = var.project_tag
-  environment = var.environment
+#   project_tag = var.project_tag
+#   environment = var.environment
 
-  account_id  = local.account_id
+#   account_id  = local.account_id
 
-  # KMS configuration
-  deletion_window_in_days = var.environment == "prod" ? 30 : 7
-  enable_key_rotation     = true
-}
+#   # KMS configuration
+#   deletion_window_in_days = var.environment == "prod" ? 30 : 7
+#   enable_key_rotation     = true
+# }
 
-module "s3" {
-  source = "../modules/s3"
+# module "s3" {
+#   source = "../modules/s3"
   
-  project_tag   = var.project_tag
-  environment   = var.environment
+#   project_tag   = var.project_tag
+#   environment   = var.environment
 
-  # KMS encryption
-  kms_key_arn = module.kms.kms_key_arn
+#   # KMS encryption
+#   kms_key_arn = module.kms.kms_key_arn
   
-  s3_policy_deny_rule_name = var.s3_policy_deny_rule_name
-  #account_id = local.account_id
+#   s3_policy_deny_rule_name = var.s3_policy_deny_rule_name
+#   #account_id = local.account_id
 
-  allowed_principals = concat(
-    local.s3_allowed_principal_arns,
-    [module.frontend.iam_role_arn]
-)
+#   allowed_principals = concat(
+#     local.s3_allowed_principal_arns,
+#     [module.frontend.iam_role_arn]
+# )
   
-  # Lifecycle configuration
-  enable_lifecycle_policy = true
-  data_retention_days     = var.environment == "prod" ? 0 : 365  # Keep prod data forever, dev/staging for 1 year
+#   # Lifecycle configuration
+#   enable_lifecycle_policy = true
+#   data_retention_days     = var.environment == "prod" ? 0 : 365  # Keep prod data forever, dev/staging for 1 year
 
-  # Allow force destroy for non-prod environments
-  force_destroy = var.environment != "prod"
+#   # Allow force destroy for non-prod environments
+#   force_destroy = var.environment != "prod"
 
-  depends_on = [module.kms]
-}
+#   depends_on = [module.kms]
+# }
 
-module "ecr" {
-  source = "../modules/ecr"
+# module "ecr" {
+#   source = "../modules/ecr"
 
-  project_tag  = var.project_tag
-  environment = var.environment
+#   project_tag  = var.project_tag
+#   environment = var.environment
   
-  ecr_repository_name = var.ecr_repository_name
-  ecr_repositories_applications = var.ecr_repositories_applications
-}
+#   ecr_repository_name = var.ecr_repository_name
+#   ecr_repositories_applications = var.ecr_repositories_applications
+# }
 
-module "route53" {
-  source       = "../modules/route53"
+# module "route53" {
+#   source       = "../modules/route53"
 
-  project_tag  = var.project_tag
-  environment  = var.environment
+#   project_tag  = var.project_tag
+#   environment  = var.environment
   
-  domain_name    = var.domain_name
-}
+#   domain_name    = var.domain_name
+# }
 
-module "acm" {
-  source           = "../modules/acm"
+# module "acm" {
+#   source           = "../modules/acm"
 
-  project_tag      = var.project_tag
-  environment      = var.environment
+#   project_tag      = var.project_tag
+#   environment      = var.environment
 
-  cert_domain_name  = "*.${var.subdomain_name}.${var.domain_name}"
-  route53_zone_id  = module.route53.zone_id
-}
+#   cert_domain_name  = "*.${var.subdomain_name}.${var.domain_name}"
+#   route53_zone_id  = module.route53.zone_id
+# }
 
 module "eks" {
   source = "../modules/eks/cluster"
@@ -186,222 +186,222 @@ module "security_groups" {
 #   node_security_group_ids = module.security_groups.eks_node_security_group_ids
 # }
 
-module "node_groups" {
-  source = "../modules/eks/node_groups"
+# module "node_groups" {
+#   source = "../modules/eks/node_groups"
 
-  project_tag        = var.project_tag
-  environment        = var.environment
+#   project_tag        = var.project_tag
+#   environment        = var.environment
 
-  # ECR for nodegroup permissions
-  ecr_repository_arns = values(module.ecr.ecr_repository_arns)
+#   # ECR for nodegroup permissions
+#   ecr_repository_arns = values(module.ecr.ecr_repository_arns)
 
-  # Node group configuration
-  node_groups = var.eks_node_groups
+#   # Node group configuration
+#   node_groups = var.eks_node_groups
 
-  cluster_name     = module.eks.cluster_name
-  private_subnet_ids   = module.vpc.private_subnet_ids
-  launch_template_ids =  module.launch_templates.launch_template_ids
+#   cluster_name     = module.eks.cluster_name
+#   private_subnet_ids   = module.vpc.private_subnet_ids
+#   launch_template_ids =  module.launch_templates.launch_template_ids
 
-  # Created to force the modules: auth config and security group, to be applied before node_groups creation
-  # in order to prevent any helm/kubernetes block from failing due to limited permissions or network blocks
-  # its especially relevant for aws auth - if initial creation of the TF resources
-  # was not done using the Github running IAM role (manually or by mistake) (bootstrapper permissions)
-  depends_on = [ 
-    module.aws_auth_config,
-    module.security_groups,
-    module.vpc_peering
-  ]
-}
+#   # Created to force the modules: auth config and security group, to be applied before node_groups creation
+#   # in order to prevent any helm/kubernetes block from failing due to limited permissions or network blocks
+#   # its especially relevant for aws auth - if initial creation of the TF resources
+#   # was not done using the Github running IAM role (manually or by mistake) (bootstrapper permissions)
+#   depends_on = [ 
+#     module.aws_auth_config,
+#     module.security_groups,
+#     module.vpc_peering
+#   ]
+# }
 
 
-module "aws_auth_config" {
-  source = "../modules/eks/aws_auth_config"
+# module "aws_auth_config" {
+#   source = "../modules/eks/aws_auth_config"
 
-  project_tag        = var.project_tag
-  environment        = var.environment
+#   project_tag        = var.project_tag
+#   environment        = var.environment
   
-  # needed for the local exec
-  aws_region = var.aws_region
+#   # needed for the local exec
+#   aws_region = var.aws_region
 
-  cluster_name = module.eks.cluster_name
+#   cluster_name = module.eks.cluster_name
 
-  # Map Roles- github open_id connect role arn
-  map_roles = [
-    {
-      rolearn  = "${var.github_oidc_role_arn}"
-      username = "github"
-      groups   = ["system:masters"]
-    },
-    # {
-    #   rolearn  = try(data.terraform_remote_state.runner_infra.outputs.runner_instance_role_arn, "arn:aws:iam::123456789012:role/my-fake-role")
-    #   username = "github-runner" # do not change this username (its used for protecting the module [check inside the module itself])
-    #   groups   = ["system:masters"]
-    # }
-    {
-      rolearn  = "arn:aws:iam::123456789012:role/my-fake-role" # do not change this: ARN will be fxied and validated inside the module itself
-      username = "github-runner" # do not change this username (its used for protecting the module [check inside the module itself])
-      groups   = ["system:masters"]
-    }
-  ]
+#   # Map Roles- github open_id connect role arn
+#   map_roles = [
+#     {
+#       rolearn  = "${var.github_oidc_role_arn}"
+#       username = "github"
+#       groups   = ["system:masters"]
+#     },
+#     # {
+#     #   rolearn  = try(data.terraform_remote_state.runner_infra.outputs.runner_instance_role_arn, "arn:aws:iam::123456789012:role/my-fake-role")
+#     #   username = "github-runner" # do not change this username (its used for protecting the module [check inside the module itself])
+#     #   groups   = ["system:masters"]
+#     # }
+#     {
+#       rolearn  = "arn:aws:iam::123456789012:role/my-fake-role" # do not change this: ARN will be fxied and validated inside the module itself
+#       username = "github-runner" # do not change this username (its used for protecting the module [check inside the module itself])
+#       groups   = ["system:masters"]
+#     }
+#   ]
 
-  # AWS Local Users permissions over the EKS
-  eks_user_access_map = local.map_users
+#   # AWS Local Users permissions over the EKS
+#   eks_user_access_map = local.map_users
 
-  depends_on = [
-    module.eks,
-    module.security_groups,
-    module.vpc_peering
-    #,
-    #module.node_groups
-  ]
-}
+#   depends_on = [
+#     module.eks,
+#     module.security_groups,
+#     module.vpc_peering
+#     #,
+#     #module.node_groups
+#   ]
+# }
 
-module "aws_load_balancer_controller" {
-  source        = "../modules/helm/aws-load-balancer-controller"
+# module "aws_load_balancer_controller" {
+#   source        = "../modules/helm/aws-load-balancer-controller"
   
-  project_tag        = var.project_tag
-  environment        = var.environment
+#   project_tag        = var.project_tag
+#   environment        = var.environment
 
-  chart_version        = var.aws_lb_controller_chart_version
-  service_account_name = "aws-load-balancer-controller-${var.environment}-service-account"
-  release_name         = "aws-load-balancer-controller-${var.environment}"
-  namespace            = var.eks_addons_namespace
+#   chart_version        = var.aws_lb_controller_chart_version
+#   service_account_name = "aws-load-balancer-controller-${var.environment}-service-account"
+#   release_name         = "aws-load-balancer-controller-${var.environment}"
+#   namespace            = var.eks_addons_namespace
   
-  vpc_id               = module.vpc.vpc_id
+#   vpc_id               = module.vpc.vpc_id
 
-  # EKS related variables
-  cluster_name         = module.eks.cluster_name
-  oidc_provider_arn    = module.eks.oidc_provider_arn
-  oidc_provider_url    = module.eks.cluster_oidc_issuer_url
+#   # EKS related variables
+#   cluster_name         = module.eks.cluster_name
+#   oidc_provider_arn    = module.eks.oidc_provider_arn
+#   oidc_provider_url    = module.eks.cluster_oidc_issuer_url
 
-  depends_on = [module.eks, module.node_groups]
-}
+#   depends_on = [module.eks, module.node_groups]
+# }
 
-module "external_dns" {
-  source = "../modules/helm/external-dns"
+# module "external_dns" {
+#   source = "../modules/helm/external-dns"
 
-  project_tag        = var.project_tag
-  environment        = var.environment
+#   project_tag        = var.project_tag
+#   environment        = var.environment
 
-  chart_version        = var.external_dns_chart_version
-  service_account_name = "external-dns-${var.environment}-service-account"
-  release_name         = "external-dns-${var.environment}"
-  namespace            = var.eks_addons_namespace
+#   chart_version        = var.external_dns_chart_version
+#   service_account_name = "external-dns-${var.environment}-service-account"
+#   release_name         = "external-dns-${var.environment}"
+#   namespace            = var.eks_addons_namespace
 
-  # DNS settings
-  domain_filter      = var.domain_name
-  txt_owner_id       = "externaldns-${var.project_tag}-${var.environment}"
-  zone_type          = "public"
-  hosted_zone_id     = module.route53.zone_id
+#   # DNS settings
+#   domain_filter      = var.domain_name
+#   txt_owner_id       = "externaldns-${var.project_tag}-${var.environment}"
+#   zone_type          = "public"
+#   hosted_zone_id     = module.route53.zone_id
 
-  # EKS related variables
-  oidc_provider_arn  = module.eks.oidc_provider_arn
-  oidc_provider_url  = module.eks.cluster_oidc_issuer_url
+#   # EKS related variables
+#   oidc_provider_arn  = module.eks.oidc_provider_arn
+#   oidc_provider_url  = module.eks.cluster_oidc_issuer_url
   
-  depends_on = [
-    module.eks, 
-    module.node_groups,
-    module.aws_load_balancer_controller
-  ]
-}
+#   depends_on = [
+#     module.eks, 
+#     module.node_groups,
+#     module.aws_load_balancer_controller
+#   ]
+# }
 
-module "cluster_autoscaler" {
-  source = "../modules/helm/cluster-autoscaler"
+# module "cluster_autoscaler" {
+#   source = "../modules/helm/cluster-autoscaler"
 
-  project_tag        = var.project_tag
-  environment        = var.environment
+#   project_tag        = var.project_tag
+#   environment        = var.environment
 
-  chart_version        = var.cluster_autoscaler_chart_version
-  service_account_name = "cluster-autoscaler-${var.environment}-service-account"
-  release_name         = "cluster-autoscaler-${var.environment}"
-  namespace            = var.eks_addons_namespace
+#   chart_version        = var.cluster_autoscaler_chart_version
+#   service_account_name = "cluster-autoscaler-${var.environment}-service-account"
+#   release_name         = "cluster-autoscaler-${var.environment}"
+#   namespace            = var.eks_addons_namespace
   
-  # EKS related variables
-  cluster_name       = module.eks.cluster_name
-  oidc_provider_arn  = module.eks.oidc_provider_arn
-  oidc_provider_url  = module.eks.cluster_oidc_issuer_url
-  autoscaling_group_arns = local.autoscaling_group_arns
+#   # EKS related variables
+#   cluster_name       = module.eks.cluster_name
+#   oidc_provider_arn  = module.eks.oidc_provider_arn
+#   oidc_provider_url  = module.eks.cluster_oidc_issuer_url
+#   autoscaling_group_arns = local.autoscaling_group_arns
 
-  depends_on = [
-    module.eks,
-    module.node_groups,
-    module.aws_load_balancer_controller.webhook_ready
-  ]
-}
+#   depends_on = [
+#     module.eks,
+#     module.node_groups,
+#     module.aws_load_balancer_controller.webhook_ready
+#   ]
+# }
 
-module "metrics_server" {
-  source = "../modules/helm/metrics-server"
+# module "metrics_server" {
+#   source = "../modules/helm/metrics-server"
 
-  project_tag  = var.project_tag
-  environment  = var.environment
+#   project_tag  = var.project_tag
+#   environment  = var.environment
 
-  chart_version = var.metrics_server_chart_version
-  service_account_name = "metrics-server-${var.environment}-service-account"
-  release_name  = "metrics-server-${var.environment}"
-  namespace     = var.eks_addons_namespace
+#   chart_version = var.metrics_server_chart_version
+#   service_account_name = "metrics-server-${var.environment}-service-account"
+#   release_name  = "metrics-server-${var.environment}"
+#   namespace     = var.eks_addons_namespace
 
-  # Resource configuration
-  cpu_requests    = "100m"
-  memory_requests = "200Mi"
-  cpu_limits      = "1000m"
-  memory_limits   = "1000Mi"
+#   # Resource configuration
+#   cpu_requests    = "100m"
+#   memory_requests = "200Mi"
+#   cpu_limits      = "1000m"
+#   memory_limits   = "1000Mi"
 
-  depends_on = [
-    module.eks,
-    module.node_groups,
-    module.aws_load_balancer_controller.webhook_ready
-  ]
-}
+#   depends_on = [
+#     module.eks,
+#     module.node_groups,
+#     module.aws_load_balancer_controller.webhook_ready
+#   ]
+# }
 
-module "frontend" {
-  source       = "../modules/apps/frontend"
+# module "frontend" {
+#   source       = "../modules/apps/frontend"
 
-  project_tag        = var.project_tag
-  environment        = var.environment
+#   project_tag        = var.project_tag
+#   environment        = var.environment
 
-  service_account_name      = var.frontend_service_account_name
-  namespace                 = var.frontend_service_namespace
+#   service_account_name      = var.frontend_service_account_name
+#   namespace                 = var.frontend_service_namespace
 
-  kms_key_arn               = module.kms.kms_key_arn
-  s3_bucket_arn             = module.s3.bucket_arn
+#   kms_key_arn               = module.kms.kms_key_arn
+#   s3_bucket_arn             = module.s3.bucket_arn
 
-  # EKS related variables
-  oidc_provider_arn         = module.eks.oidc_provider_arn
-  oidc_provider_url         = module.eks.cluster_oidc_issuer_url
+#   # EKS related variables
+#   oidc_provider_arn         = module.eks.oidc_provider_arn
+#   oidc_provider_url         = module.eks.cluster_oidc_issuer_url
   
-  depends_on = [
-    module.eks,
-    module.node_groups,
-    module.aws_load_balancer_controller.webhook_ready
-  ]
-}
+#   depends_on = [
+#     module.eks,
+#     module.node_groups,
+#     module.aws_load_balancer_controller.webhook_ready
+#   ]
+# }
 
 # This modules creates an AWS managed secrets, names derived off var.*_aws_secret_key
 # The secret holds a json, with key:value pairs
 # This gets consumed afterwards by the external secrets operator module
-module "secrets_app_envs" {
-  source = "../modules/secrets-manager"
+# module "secrets_app_envs" {
+#   source = "../modules/secrets-manager"
 
-  project_tag = var.project_tag
-  environment = var.environment
+#   project_tag = var.project_tag
+#   environment = var.environment
   
-  secrets_config_with_passwords = {}
-  secret_keys                   = local.secret_keys
-  app_secrets_config            = local.app_secrets_config
-}
+#   secrets_config_with_passwords = {}
+#   secret_keys                   = local.secret_keys
+#   app_secrets_config            = local.app_secrets_config
+# }
 
-module "argocd_templates" {  
-  source = "../modules/gitops/argocd-templates"
+# module "argocd_templates" {  
+#   source = "../modules/gitops/argocd-templates"
   
-  project_tag                 = var.project_tag
-  argocd_namespace            = var.argocd_namespace
-  github_org                  = var.github_org
-  github_gitops_repo          = var.github_gitops_repo
-  github_application_repo     = var.github_application_repo
-  environment                 = var.environment
-  app_of_apps_path            = var.argocd_app_of_apps_path
-  app_of_apps_target_revision = var.argocd_app_of_apps_target_revision
-}
+#   project_tag                 = var.project_tag
+#   argocd_namespace            = var.argocd_namespace
+#   github_org                  = var.github_org
+#   github_gitops_repo          = var.github_gitops_repo
+#   github_application_repo     = var.github_application_repo
+#   environment                 = var.environment
+#   app_of_apps_path            = var.argocd_app_of_apps_path
+#   app_of_apps_target_revision = var.argocd_app_of_apps_target_revision
+# }
 
 # module "gitops_bootstrap" {
 #   count = (var.bootstrap_mode || var.update_apps) ? 1 : 0
@@ -546,15 +546,15 @@ module "argocd_templates" {
 #   ]
 # }
 
-module "save_grafana_password" {
-  source = "../modules/secrets-manager"
+# module "save_grafana_password" {
+#   source = "../modules/secrets-manager"
 
-  project_tag = var.project_tag
-  environment = var.environment
+#   project_tag = var.project_tag
+#   environment = var.environment
   
-  secrets_config_with_passwords = local.secrets_config_with_passwords
-  app_secrets_config            = {}
-}
+#   secrets_config_with_passwords = local.secrets_config_with_passwords
+#   app_secrets_config            = {}
+# }
 
 # module "monitoring" {
 #   count = var.enable_monitoring ? 1 : 0
@@ -620,155 +620,155 @@ module "save_grafana_password" {
 #   ]
 # }
 
-module "service_monitors" {
-  source = "../modules/monitoring/service-monitors"
+# module "service_monitors" {
+#   source = "../modules/monitoring/service-monitors"
   
-  project_tag   = var.project_tag
-  environment   = var.environment
+#   project_tag   = var.project_tag
+#   environment   = var.environment
   
-  # Namespaces
-  monitoring_namespace         = var.monitoring_namespace
-  argocd_namespace            = var.argocd_namespace
-  aws_lb_controller_namespace = var.eks_addons_namespace
+#   # Namespaces
+#   monitoring_namespace         = var.monitoring_namespace
+#   argocd_namespace            = var.argocd_namespace
+#   aws_lb_controller_namespace = var.eks_addons_namespace
   
-  # Optional features
-  enable_dex_metrics = var.enable_dex_metrics
+#   # Optional features
+#   enable_dex_metrics = var.enable_dex_metrics
   
-  depends_on = [
-    module.eks,
-    module.monitoring,
-    module.argocd,
-    module.aws_load_balancer_controller
-  ]
-}
+#   depends_on = [
+#     module.eks,
+#     module.monitoring,
+#     module.argocd,
+#     module.aws_load_balancer_controller
+#   ]
+# }
 
-module "grafana_dashboards" {
-  source = "../modules/monitoring/grafana-dashboards"
+# module "grafana_dashboards" {
+#   source = "../modules/monitoring/grafana-dashboards"
   
-  project_tag   = var.project_tag
-  environment   = var.environment
+#   project_tag   = var.project_tag
+#   environment   = var.environment
   
-  monitoring_namespace       = var.monitoring_namespace
-  prometheus_datasource_name = "prometheus"
+#   monitoring_namespace       = var.monitoring_namespace
+#   prometheus_datasource_name = "prometheus"
   
-  # Dashboard controls
-  enable_aws_lbc_dashboard    = true
+#   # Dashboard controls
+#   enable_aws_lbc_dashboard    = true
   
-  depends_on = [
-    module.monitoring,
-    module.service_monitors
-  ]
-}
+#   depends_on = [
+#     module.monitoring,
+#     module.service_monitors
+#   ]
+# }
 
-module "external_secrets_operator" {
-  source        = "../modules/helm/external-secrets-operator"
+# module "external_secrets_operator" {
+#   source        = "../modules/helm/external-secrets-operator"
   
-  project_tag        = var.project_tag
-  environment        = var.environment
+#   project_tag        = var.project_tag
+#   environment        = var.environment
 
-  #chart_version = "0.9.17"
-  chart_version = var.external_secrets_operator_chart_version
-  service_account_name = "eso-${var.environment}-service-account"
-  release_name       = "external-secrets-${var.environment}"
-  namespace          = var.eks_addons_namespace
+#   #chart_version = "0.9.17"
+#   chart_version = var.external_secrets_operator_chart_version
+#   service_account_name = "eso-${var.environment}-service-account"
+#   release_name       = "external-secrets-${var.environment}"
+#   namespace          = var.eks_addons_namespace
 
-  # ArgoCD details
-  argocd_namespace                = var.argocd_namespace
-  argocd_service_account_name     = local.argocd_service_account_name
-  #argocd_service_account_role_arn = module.argocd.service_account_role_arn
-  argocd_secret_name              = module.secrets_app_envs.app_secrets_names["${var.argocd_aws_secret_key}"]
-  argocd_github_sso_secret_name = local.argocd_github_sso_secret_name
+#   # ArgoCD details
+#   argocd_namespace                = var.argocd_namespace
+#   argocd_service_account_name     = local.argocd_service_account_name
+#   #argocd_service_account_role_arn = module.argocd.service_account_role_arn
+#   argocd_secret_name              = module.secrets_app_envs.app_secrets_names["${var.argocd_aws_secret_key}"]
+#   argocd_github_sso_secret_name = local.argocd_github_sso_secret_name
 
-  aws_region         = var.aws_region
+#   aws_region         = var.aws_region
   
-  # Extra values if needed
-  set_values = [
-  ]
+#   # Extra values if needed
+#   set_values = [
+#   ]
     
-  depends_on = [
-    module.eks,
-    module.node_groups,
-    module.aws_auth_config,
-    module.argocd,
-    module.secrets_app_envs,
-    module.aws_load_balancer_controller.webhook_ready
-  ]
-}
+#   depends_on = [
+#     module.eks,
+#     module.node_groups,
+#     module.aws_auth_config,
+#     module.argocd,
+#     module.secrets_app_envs,
+#     module.aws_load_balancer_controller.webhook_ready
+#   ]
+# }
 
 # Application Repo permissions over ECR(s)
-module "repo_ecr_access" {
-  source = "../modules/github/repo_ecr_access"
+# module "repo_ecr_access" {
+#   source = "../modules/github/repo_ecr_access"
 
-  project_tag        = var.project_tag
-  environment        = var.environment
+#   project_tag        = var.project_tag
+#   environment        = var.environment
 
-  github_org         = var.github_org
-  github_repo        = var.github_application_repo
+#   github_org         = var.github_org
+#   github_repo        = var.github_application_repo
   
-  # AWS IAM Identity Provider - created before hand (explained in the variables.tf)
-  aws_iam_openid_connect_provider_github_arn = var.aws_iam_openid_connect_provider_github_arn
+#   # AWS IAM Identity Provider - created before hand (explained in the variables.tf)
+#   aws_iam_openid_connect_provider_github_arn = var.aws_iam_openid_connect_provider_github_arn
 
-  ecr_repository_arns = values(module.ecr.ecr_repository_arns)
-}
+#   ecr_repository_arns = values(module.ecr.ecr_repository_arns)
+# }
 
-# Creating Repository Secrets and Variables in the Application Repo
-module "repo_secrets" {
-  source = "../modules/github/repo_secrets"
+# # Creating Repository Secrets and Variables in the Application Repo
+# module "repo_secrets" {
+#   source = "../modules/github/repo_secrets"
   
-  environment = var.environment
+#   environment = var.environment
 
-  repository_name = var.github_application_repo
+#   repository_name = var.github_application_repo
 
-  github_variables = {
-    AWS_REGION = var.aws_region
-    GITOPS_REPO = "${var.github_org}/${var.github_gitops_repo}"
-  }
+#   github_variables = {
+#     AWS_REGION = var.aws_region
+#     GITOPS_REPO = "${var.github_org}/${var.github_gitops_repo}"
+#   }
 
-  # will be Cleaning SHA suffixes from Terraform
-  # outputs that sometimes contain --SPLIT-- markers (like ECR urls)
-  github_secrets = {
-    AWS_ROLE_TO_ASSUME = "${module.repo_ecr_access.github_actions_role_arn}"
-    # ECR
-    ECR_REPOSITORY_FRONTEND = "${module.ecr.ecr_repository_urls["welcome"]}"
+#   # will be Cleaning SHA suffixes from Terraform
+#   # outputs that sometimes contain --SPLIT-- markers (like ECR urls)
+#   github_secrets = {
+#     AWS_ROLE_TO_ASSUME = "${module.repo_ecr_access.github_actions_role_arn}"
+#     # ECR
+#     ECR_REPOSITORY_FRONTEND = "${module.ecr.ecr_repository_urls["welcome"]}"
     
-    #Github Token (allows App repo to push into gitops repo)
-    TOKEN_GITHUB = "${var.github_token}"
-  }
-}
+#     #Github Token (allows App repo to push into gitops repo)
+#     TOKEN_GITHUB = "${var.github_token}"
+#   }
+# }
 
-module "trigger_app_build" {
-  count = var.bootstrap_mode ? 1 : 0
+# module "trigger_app_build" {
+#   count = var.bootstrap_mode ? 1 : 0
 
-  source = "../modules/github/trigger-app-build"
+#   source = "../modules/github/trigger-app-build"
   
-  github_token            = var.github_token
-  github_org              = var.github_org
-  github_application_repo = var.github_application_repo
-  environment             = var.environment
+#   github_token            = var.github_token
+#   github_org              = var.github_org
+#   github_application_repo = var.github_application_repo
+#   environment             = var.environment
   
-  depends_on = [
-    module.ecr,
-    module.repo_secrets,
-    module.repo_ecr_access
-  ]
-}
+#   depends_on = [
+#     module.ecr,
+#     module.repo_secrets,
+#     module.repo_ecr_access
+#   ]
+# }
 
-module "ebs_csi_driver" {
-  source = "../modules/helm/ebs-csi-driver"
+# module "ebs_csi_driver" {
+#   source = "../modules/helm/ebs-csi-driver"
 
-  project_tag        = var.project_tag
-  environment        = var.environment
+#   project_tag        = var.project_tag
+#   environment        = var.environment
 
-  chart_version        = "2.35.1"
-  service_account_name = "ebs-csi-controller-${var.environment}-sa"
-  release_name         = "aws-ebs-csi-driver-${var.environment}"
-  namespace            = var.eks_addons_namespace
+#   chart_version        = "2.35.1"
+#   service_account_name = "ebs-csi-controller-${var.environment}-sa"
+#   release_name         = "aws-ebs-csi-driver-${var.environment}"
+#   namespace            = var.eks_addons_namespace
 
-  oidc_provider_arn    = module.eks.oidc_provider_arn
-  oidc_provider_url    = module.eks.cluster_oidc_issuer_url
+#   oidc_provider_arn    = module.eks.oidc_provider_arn
+#   oidc_provider_url    = module.eks.cluster_oidc_issuer_url
 
-  depends_on = [module.eks,module.node_groups]
-}
+#   depends_on = [module.eks,module.node_groups]
+# }
 
 # # ====================================================================
 # # EKS LOCKDOWN - Runs after ALL other modules complete
