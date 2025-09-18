@@ -156,7 +156,7 @@ AWS_REGION = us-east-1
 - **bootstrap_mode:** Creates yamls in the GitOps Repository: (Creates a PR)
                         ArgoCD project and app-of-apps yaml are for reference only (they are deployed using helm).Applications and their value files are also created.
                         
-                    This mode also Triggers the Application Repository's workflow that builds the app, pushes to ECR, creates a GitOps PR to update the digest, and triggers a Gitops Repo workflow to merge it.
+This mode also Triggers the Application Repository's workflow that builds the app, pushes to ECR, creates a GitOps PR to update the digest, and triggers a Gitops Repo workflow to merge it.
 - **update_apps:** Updates infrastructure values in GitOps repository only (Creates a PR)
 
 ## Troubleshooting
