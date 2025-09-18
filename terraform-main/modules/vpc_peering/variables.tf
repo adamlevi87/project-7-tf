@@ -30,10 +30,10 @@ variable "private_route_table_ids" {
   type        = list(string)
 }
 
-# variable "aws_region" {
-#   description = "AWS region"
-#   type        = string
-# }
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+}
 
 # variable "vpc_id" {
 #   description = "Main VPC ID (accepter VPC)"
