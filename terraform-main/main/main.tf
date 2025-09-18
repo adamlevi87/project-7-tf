@@ -31,6 +31,8 @@ module "vpc" {
     }
     # Private - all subnets
     private_subnet_cidrs = local.private_subnet_cidrs
+
+    aws_region = var.aws_region
 }
 
 module "vpc_peering" {

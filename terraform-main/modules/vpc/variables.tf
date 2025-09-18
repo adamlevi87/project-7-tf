@@ -10,6 +10,11 @@ variable "environment" {
   type        = string
 }
 
+variable "aws_region" {
+  description = "AWS region to deploy resources"
+  type        = string
+}
+
 variable "primary_public_subnet_cidrs" {
   description = "Primary public subnet CIDRs that should always exist (houses primary NAT gateway)"
   type        = map(string)
