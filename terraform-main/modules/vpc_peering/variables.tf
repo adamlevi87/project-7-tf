@@ -15,15 +15,15 @@ variable "environment" {
 #   type        = bool
 # }
 
-variable "peering_connection_id" {
-  description = "VPC peering connection ID from runner infrastructure (via remote state)"
-  type        = string
-}
+# variable "peering_connection_id" {
+#   description = "VPC peering connection ID from runner infrastructure (via remote state)"
+#   type        = string
+# }
 
-variable "runner_vpc_cidr" {
-  description = "CIDR block of the runner VPC (via remote state)"
-  type        = string
-}
+# variable "runner_vpc_cidr" {
+#   description = "CIDR block of the runner VPC (via remote state)"
+#   type        = string
+# }
 
 variable "private_route_table_ids" {
   description = "List of private route table IDs from main VPC"

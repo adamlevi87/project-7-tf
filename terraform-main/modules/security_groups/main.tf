@@ -9,16 +9,50 @@ terraform {
   }
 }
 
-resource "null_resource" "validate_peering_outputs" {
+# resource "null_resource" "validate_peering_outputs" {
+#   #count = var.initialize_run ? 0 : 1
+  
+#   provisioner "local-exec" {
+#     command = <<-EOF
+#       if [ "${var.runner_vpc_cidr}" = "10.255.255.0/24" ]; then
+#         echo "ERROR: Required runner_vpc_cidr missing" 
+#         exit 1
+#       fi
+#       echo "✅ All peering outputs validated"
+#     EOF
+#   }
+# }
+
+data "terraform_remote_state" "runner_infra" {
   #count = var.initialize_run ? 0 : 1
   
+  backend = "s3"
+  config = {
+    bucket = "${var.project_tag}-tf-state"
+    key    = "${var.project_tag}-tf/${var.environment}/runner-infra/terraform.tfstate"
+    region = "${var.aws_region}"
+  }
+}
+
+resource "null_resource" "validate_outputs_or_fail" {
+  #count = var.initialize_run ? 0 : 1
+
   provisioner "local-exec" {
     command = <<-EOF
-      if [ "${var.runner_vpc_cidr}" = "10.255.255.0/24" ]; then
-        echo "ERROR: Required runner_vpc_cidr missing" 
+      # Check all required outputs security groups module
+      VPC_CIDR="${try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "")}"
+      
+      
+      if [ -z "$VPC_CIDR" ] ; then
+        echo "ERROR: Required outputs missing from main terraform state:"
+        echo "  VPC CIDR: $VPC_CIDR" 
+        echo "Cannot proceed with Security groups module - runner infrastructure outputs incomplete"
+        echo "Run 'terraform apply' on main infrastructure first"
         exit 1
       fi
-      echo "✅ All peering outputs validated"
+      
+      echo "Validation passed - all required outputs present"
+      echo "VPC CIDR: $VPC_CIDR"
     EOF
   }
 }
@@ -615,13 +649,33 @@ resource "aws_vpc_security_group_ingress_rule" "eks_api_from_cidrs" {
   }
 }
 
+# resource "aws_vpc_security_group_ingress_rule" "eks_api_from_github_runner" {
+  
+#   security_group_id = var.cluster_security_group_id
+#   from_port         = 443
+#   to_port           = 443
+#   ip_protocol       = "tcp"
+#   cidr_ipv4         = var.runner_vpc_cidr
+#   description       = "PEERING: Allow Peered network - github runner- access to the cluster API"
+  
+#   tags = {
+#     Project     = var.project_tag
+#     Environment = var.environment
+#     Purpose = "external-access"
+#     Rule    = "api-from-cidr"
+#     Source  = "Github-Runner-VPC-CIDR"
+#   }
+
+#   depends_on = [ null_resource.validate_peering_outputs ]
+# }
+
 resource "aws_vpc_security_group_ingress_rule" "eks_api_from_github_runner" {
   
   security_group_id = var.cluster_security_group_id
   from_port         = 443
   to_port           = 443
   ip_protocol       = "tcp"
-  cidr_ipv4         = var.runner_vpc_cidr
+  cidr_ipv4         = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
   description       = "PEERING: Allow Peered network - github runner- access to the cluster API"
   
   tags = {
@@ -632,7 +686,7 @@ resource "aws_vpc_security_group_ingress_rule" "eks_api_from_github_runner" {
     Source  = "Github-Runner-VPC-CIDR"
   }
 
-  depends_on = [ null_resource.validate_peering_outputs ]
+  depends_on = [ null_resource.validate_outputs_or_fail ]
 }
 
 # ================================

@@ -42,9 +42,9 @@ module "vpc_peering" {
   environment = var.environment
   #initialize_run = var.initialize_run
   
-  # Route table IDs for creating routes 
-  peering_connection_id = try(data.terraform_remote_state.runner_infra.outputs.vpc_peering_connection_id, "fake-placeholder")
-  runner_vpc_cidr      = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
+  # # Route table IDs for creating routes 
+  # peering_connection_id = try(data.terraform_remote_state.runner_infra.outputs.vpc_peering_connection_id, "fake-placeholder")
+  # runner_vpc_cidr      = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
   
   # Route table IDs for creating routes
   private_route_table_ids = module.vpc.private_route_table_ids
@@ -157,7 +157,7 @@ module "security_groups" {
   cluster_security_group_id       = module.eks.cluster_security_group_id
 
   initialize_run    = var.initialize_run
-  runner_vpc_cidr   = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
+  #runner_vpc_cidr   = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
   
   # Node group configuration
   node_groups = var.eks_node_groups
@@ -222,8 +222,13 @@ module "aws_auth_config" {
       username = "github"
       groups   = ["system:masters"]
     },
+    # {
+    #   rolearn  = try(data.terraform_remote_state.runner_infra.outputs.runner_instance_role_arn, "arn:aws:iam::123456789012:role/my-fake-role")
+    #   username = "github-runner" # do not change this username (its used for protecting the module [check inside the module itself])
+    #   groups   = ["system:masters"]
+    # }
     {
-      rolearn  = try(data.terraform_remote_state.runner_infra.outputs.runner_instance_role_arn, "arn:aws:iam::123456789012:role/my-fake-role")
+      rolearn  = "arn:aws:iam::123456789012:role/my-fake-role" # do not change this: ARN will be fxied and validated inside the module itself
       username = "github-runner" # do not change this username (its used for protecting the module [check inside the module itself])
       groups   = ["system:masters"]
     }

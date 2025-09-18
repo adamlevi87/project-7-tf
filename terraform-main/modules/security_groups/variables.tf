@@ -15,10 +15,10 @@ variable "initialize_run" {
   type        = bool
 }
 
-variable "runner_vpc_cidr" {
-  description = "CIDR block of the runner VPC (via remote state)"
-  type        = string
-}
+# variable "runner_vpc_cidr" {
+#   description = "CIDR block of the runner VPC (via remote state)"
+#   type        = string
+# }
 
 variable "vpc_id" {
   description = "VPC ID where RDS will be deployed"

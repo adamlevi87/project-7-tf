@@ -32,29 +32,57 @@ terraform {
 #   }
 # }
 
-# data "terraform_remote_state" "runner_infra" {
-#   backend = "s3"
-#   config = {
-#     bucket = "${var.project_tag}-tf-state"
-#     key    = "${var.project_tag}-tf/${var.environment}/runner-infra/terraform.tfstate"
-#     region = "${var.aws_region}"
+data "terraform_remote_state" "runner_infra" {
+  #count = var.initialize_run ? 0 : 1
+  
+  backend = "s3"
+  config = {
+    bucket = "${var.project_tag}-tf-state"
+    key    = "${var.project_tag}-tf/${var.environment}/runner-infra/terraform.tfstate"
+    region = "${var.aws_region}"
+  }
+}
+
+# resource "null_resource" "validate_peering_outputs" {
+#   #count = var.initialize_run ? 0 : 1
+  
+#   provisioner "local-exec" {
+#     command = <<-EOF
+#       if [ "${var.peering_connection_id}" = "fake-placeholder" ]; then
+#         echo "ERROR: Required peering_connection_id missing"
+#         exit 1
+#       fi
+#       if [ "${var.runner_vpc_cidr}" = "10.255.255.0/24" ]; then
+#         echo "ERROR: Required runner_vpc_cidr missing" 
+#         exit 1
+#       fi
+#       echo "✅ All peering outputs validated"
+#     EOF
 #   }
 # }
 
-resource "null_resource" "validate_peering_outputs" {
+resource "null_resource" "validate_outputs_or_fail" {
   #count = var.initialize_run ? 0 : 1
-  
+
   provisioner "local-exec" {
     command = <<-EOF
-      if [ "${var.peering_connection_id}" = "fake-placeholder" ]; then
-        echo "ERROR: Required peering_connection_id missing"
+      # Check all required outputs for VPC peering
+      PEERING_CONNECTION_ID="${try(data.terraform_remote_state.runner_infra.outputs.vpc_peering_connection_id, "")}"
+      VPC_CIDR="${try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "")}"
+      
+      
+      if [ -z "$PEERING_CONNECTION_ID" ] || [ -z "$VPC_CIDR" ] ; then
+        echo "ERROR: Required outputs missing from main terraform state:"
+        echo "  PEERING_CONNECTION_ID: $PEERING_CONNECTION_ID"
+        echo "  VPC CIDR: $VPC_CIDR" 
+        echo "Cannot proceed with VPC peering - runner infrastructure outputs incomplete"
+        echo "Run 'terraform apply' on main infrastructure first"
         exit 1
       fi
-      if [ "${var.runner_vpc_cidr}" = "10.255.255.0/24" ]; then
-        echo "ERROR: Required runner_vpc_cidr missing" 
-        exit 1
-      fi
-      echo "✅ All peering outputs validated"
+      
+      echo "Validation passed - all required outputs present"
+      echo "PEERING_CONNECTION_ID: $PEERING_CONNECTION_ID"
+      echo "VPC CIDR: $VPC_CIDR"
     EOF
   }
 }
@@ -72,10 +100,10 @@ resource "aws_route" "main_to_runner_private" {
   count = length(var.private_route_table_ids)
   
   route_table_id            = var.private_route_table_ids[count.index]
-  destination_cidr_block    = var.runner_vpc_cidr  # No try needed!
-  vpc_peering_connection_id = var.peering_connection_id
+  destination_cidr_block    = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
+  vpc_peering_connection_id = try(data.terraform_remote_state.runner_infra.outputs.vpc_peering_connection_id, "fake-placeholder")
 
-  depends_on = [null_resource.validate_peering_outputs]
+  depends_on = [null_resource.validate_outputs_or_fail]
 }
 
 # resource "aws_vpc_peering_connection_accepter" "main" {
