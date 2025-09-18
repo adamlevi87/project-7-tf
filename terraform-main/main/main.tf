@@ -205,12 +205,9 @@ module "node_groups" {
   private_subnet_ids   = module.vpc.private_subnet_ids
   launch_template_ids =  module.launch_templates.launch_template_ids
 
-  # Created to force the modules: auth config and security group, to be applied before node_groups creation
-  # in order to prevent any helm/kubernetes block from failing due to limited permissions or network blocks
-  # its especially relevant for aws auth - if initial creation of the TF resources
-  # was not done using the Github running IAM role (manually or by mistake) (bootstrapper permissions)
+  # Created to force the modules: security group, to be applied before node_groups creation
+  # in order to prevent any helm/kubernetes block from failing due to network blocks
   depends_on = [ 
-    module.aws_auth_config,
     module.security_groups,
     module.vpc_peering
   ]
@@ -253,9 +250,8 @@ module "aws_auth_config" {
   depends_on = [
     module.eks,
     module.security_groups,
-    module.vpc_peering
-    #,
-    #module.node_groups
+    module.vpc_peering,
+    module.node_groups
   ]
 }
 
@@ -277,7 +273,11 @@ module "aws_load_balancer_controller" {
   oidc_provider_arn    = module.eks.oidc_provider_arn
   oidc_provider_url    = module.eks.cluster_oidc_issuer_url
 
-  depends_on = [module.eks, module.node_groups]
+  depends_on = [
+    module.eks, 
+    module.node_groups,
+    module.aws_auth_config
+  ]
 }
 
 module "external_dns" {
@@ -304,7 +304,8 @@ module "external_dns" {
   depends_on = [
     module.eks, 
     module.node_groups,
-    module.aws_load_balancer_controller
+    module.aws_load_balancer_controller,
+    module.aws_auth_config
   ]
 }
 
@@ -328,7 +329,8 @@ module "cluster_autoscaler" {
   depends_on = [
     module.eks,
     module.node_groups,
-    module.aws_load_balancer_controller.webhook_ready
+    module.aws_load_balancer_controller.webhook_ready,
+    module.aws_auth_config
   ]
 }
 
@@ -352,7 +354,8 @@ module "metrics_server" {
   depends_on = [
     module.eks,
     module.node_groups,
-    module.aws_load_balancer_controller.webhook_ready
+    module.aws_load_balancer_controller.webhook_ready,
+    module.aws_auth_config
   ]
 }
 
@@ -375,7 +378,8 @@ module "frontend" {
   depends_on = [
     module.eks,
     module.node_groups,
-    module.aws_load_balancer_controller.webhook_ready
+    module.aws_load_balancer_controller.webhook_ready,
+    module.aws_auth_config
   ]
 }
 
@@ -545,7 +549,8 @@ module "argocd" {
     module.aws_load_balancer_controller.webhook_ready,
     module.acm,
     module.external_dns,
-    module.secrets_app_envs
+    module.secrets_app_envs,
+    module.aws_auth_config
   ]
 }
 
@@ -619,7 +624,8 @@ module "monitoring" {
     module.node_groups,
     module.aws_load_balancer_controller.webhook_ready,
     module.external_dns,
-    module.ebs_csi_driver
+    module.ebs_csi_driver,
+    module.aws_auth_config
   ]
 }
 
@@ -694,7 +700,8 @@ module "external_secrets_operator" {
     module.aws_auth_config,
     module.argocd,
     module.secrets_app_envs,
-    module.aws_load_balancer_controller.webhook_ready
+    module.aws_load_balancer_controller.webhook_ready,
+    module.aws_auth_config
   ]
 }
 
@@ -770,7 +777,11 @@ module "ebs_csi_driver" {
   oidc_provider_arn    = module.eks.oidc_provider_arn
   oidc_provider_url    = module.eks.cluster_oidc_issuer_url
 
-  depends_on = [module.eks,module.node_groups]
+  depends_on = [
+    module.eks,
+    module.node_groups,
+    module.aws_auth_config
+  ]
 }
 
 # # ====================================================================
