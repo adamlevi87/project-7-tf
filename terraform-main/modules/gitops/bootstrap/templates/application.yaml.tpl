@@ -8,6 +8,7 @@ metadata:
   namespace: ${argocd_namespace}
   annotations:
     argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/refresh: hard
 spec:
   project: ${argocd_project_name}
   destination:
