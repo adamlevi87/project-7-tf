@@ -686,8 +686,8 @@ resource "aws_vpc_security_group_ingress_rule" "eks_api_from_github_runner" {
     Source  = "Github-Runner-VPC-CIDR"
   }
 
-  #depends_on = [ null_resource.validate_outputs_or_fail ]
-  depends_on = var.skip_runner_integration ? [] : [null_resource.validate_outputs_or_fail[0]]
+  depends_on = [ null_resource.validate_outputs_or_fail ]
+  #depends_on = var.skip_runner_integration ? [] : [null_resource.validate_outputs_or_fail[0]]
 }
 
 # ================================
