@@ -1,15 +1,15 @@
 # terraform-main/main/main.tf
 
-data "terraform_remote_state" "runner_infra" {
-  #count = var.initialize_run ? 0 : 1
+# data "terraform_remote_state" "runner_infra" {
+#   #count = var.initialize_run ? 0 : 1
   
-  backend = "s3"
-  config = {
-    bucket = "${var.project_tag}-tf-state"
-    key    = "${var.project_tag}-tf/${var.environment}/runner-infra/terraform.tfstate"
-    region = "${var.aws_region}"
-  }
-}
+#   backend = "s3"
+#   config = {
+#     bucket = "${var.project_tag}-tf-state"
+#     key    = "${var.project_tag}-tf/${var.environment}/runner-infra/terraform.tfstate"
+#     region = "${var.aws_region}"
+#   }
+# }
 
 module "vpc" {
     source = "../modules/vpc"
