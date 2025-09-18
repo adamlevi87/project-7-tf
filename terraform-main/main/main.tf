@@ -147,6 +147,11 @@ module "eks" {
 
 module "test" {
   source = "../modules/test"
+  project_tag        = var.project_tag
+  environment        = var.environment
+
+  # needed for the local exec
+  aws_region = var.aws_region
 }
 
 module "security_groups" {
