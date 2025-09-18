@@ -24,6 +24,11 @@ on:
           - apply
           - plan-and-apply
           # - destroy  # Different logic - TODO: implement later
+      first_run:
+        description: "Is this the very first run? (nothing exists yet)"
+        required: true
+        default: true
+        type: boolean
       plan_full_runs:
         description: "Plan before full deployment (step 4) (other workflow trigger)"
         required: true
@@ -79,10 +84,17 @@ jobs:
           AWS_REGION: ${{ env.AWS_REGION }}
           PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+          ARGOCD_APP_ID: ${{ secrets[format('ARGOCD_APP_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          ARGOCD_INSTALLATION_ID: ${{ secrets[format('ARGOCD_INSTALLATION_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          ARGOCD_PRIVATE_KEY_B64: ${{ secrets[format('ARGOCD_PRIVATE_KEY_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          OAUTH_GITHUB_CLIENT_ID: ${{ secrets[format('OAUTH_GITHUB_CLIENT_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets[format('OAUTH_GITHUB_CLIENT_SECRET_TF_{0}', steps.env_suffix.outputs.suffix)] }}
         run: |
           echo "================================================"
           echo "STEP 1: 1st targeted terraform-main run"
           echo "Environment: ${{ github.event.inputs.env }}"
+          echo "First Run: ${{ github.event.inputs.first_run }}"
           echo "================================================"
 
           cd terraform-main/main/
@@ -105,7 +117,6 @@ jobs:
             -var="auto_merge_pr=false"
             -target=module.vpc
             -target=module.eks
-            #-var="initialize_run=true"
           )
           
           case "${{ github.event.inputs.action }}" in
@@ -122,9 +133,6 @@ jobs:
               echo "================================================"
               terraform apply -auto-approve "${COMMON_VARS[@]}"
               ;;
-            # destroy)
-            #   terraform destroy -auto-approve "${COMMON_VARS[@]}"
-            #   ;;
             *)
               echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
               ;;
@@ -171,9 +179,6 @@ jobs:
               echo "================================================"
               terraform apply -auto-approve "${COMMON_VARS[@]}"
               ;;
-            # destroy)
-            #   terraform destroy -auto-approve "${COMMON_VARS[@]}"
-            #   ;;
             *)
               echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
               ;;
@@ -184,16 +189,25 @@ jobs:
           AWS_REGION: ${{ env.AWS_REGION }}
           PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+          ARGOCD_APP_ID: ${{ secrets[format('ARGOCD_APP_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          ARGOCD_INSTALLATION_ID: ${{ secrets[format('ARGOCD_INSTALLATION_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          ARGOCD_PRIVATE_KEY_B64: ${{ secrets[format('ARGOCD_PRIVATE_KEY_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          OAUTH_GITHUB_CLIENT_ID: ${{ secrets[format('OAUTH_GITHUB_CLIENT_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets[format('OAUTH_GITHUB_CLIENT_SECRET_TF_{0}', steps.env_suffix.outputs.suffix)] }}
         run: |
           echo "================================================"
           echo "STEP 3: 2nd targeted terraform-main run"
           echo "Environment: ${{ github.event.inputs.env }}"
+          echo "First Run: ${{ github.event.inputs.first_run }}"
+          echo "Action: ${{ github.event.inputs.action }}"
           echo "================================================"
 
           cd terraform-main/main/
           
           terraform init -backend-config=../environments/${{ github.event.inputs.env }}/backend.config
 
+          # Base variables (no targets initially)
           COMMON_VARS=(
             -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
             -var="github_token=$TOKEN_GITHUB"
@@ -208,21 +222,25 @@ jobs:
             -var="bootstrap_mode=false"
             -var="update_apps=false"
             -var="auto_merge_pr=false"
-            
-            -target=module.vpc_peering
-            
-            # Due to something i dont understand
-            # security group needs this protection
-            -target=module.security_groups
-            -var="skip_runner_integration=true"
           )
+
+          # Conditional logic based on first_run and action
+          if [[ "${{ github.event.inputs.first_run }}" == "true" && "${{ github.event.inputs.action }}" == "plan" ]]; then
+            # First run + plan: Full plan with skip integration (no targets)
+            COMMON_VARS+=(-var="skip_runner_integration=true")
+            echo "First run + Plan: Full plan with skip integration (bootstrap mode)"
+          else
+            # Not first run OR not plan: Target specific modules (tfstate exists)
+            COMMON_VARS+=(-target=module.vpc_peering -target=module.security_groups)
+            echo "Not first run or not plan: Targeting specific modules (normal mode)"
+          fi
           
           case "${{ github.event.inputs.action }}" in
             plan)
               terraform plan "${COMMON_VARS[@]}"
               ;;
             apply)
-              echo "step -3 - applying!"
+              echo "Step 3 - Applying modules"
               terraform apply -auto-approve "${COMMON_VARS[@]}"
               ;;
             plan-and-apply)
@@ -232,27 +250,21 @@ jobs:
               echo "================================================"
               terraform apply -auto-approve "${COMMON_VARS[@]}"
               ;;
-            # destroy)
-            #   terraform destroy -auto-approve "${COMMON_VARS[@]}"
-            #   ;;
             *)
               echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
               ;;
           esac     
 
-      ##### Important - this is a bootstrap workflow
-      ##### triggering this step with a plan might fail if the other steps did not run
-      ##### as the EKS has no public endpoinds and the runner must be alive and available
-      ##### as this step triggers the main TF workflow that must be run on the Github self-hosted runner
       - name: Step 4 - Trigger Full Main Workflow on Runner
-        # cannot run a full PLAN, an apply on step 1+2 is a must
-        #if: github.event.inputs.action != 'plan'
+        # Skip Step 4 if it's first run + plan (Step 3 covers full planning)
+        if: ${{ !(github.event.inputs.first_run == 'true' && github.event.inputs.action == 'plan') }}
         env:
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
         run: |
           echo "================================================"
           echo "STEP 4: Triggering Full Main Workflow on Runner"
           echo "Environment: ${{ github.event.inputs.env }}"
+          echo "First Run: ${{ github.event.inputs.first_run }}"
           echo "Plan Full Runs: ${{ github.event.inputs.plan_full_runs }}"
           echo "================================================"
           
@@ -261,19 +273,19 @@ jobs:
             true)
               ACTION="plan"
               echo "Triggering main workflow with PLAN action..."
-              
               ;;
             false)
               ACTION="apply"
               echo "Triggering main workflow with APPLY action..."
-              
               ;;
             *)
               echo "Invalid plan_full_runs value: ${{ github.event.inputs.plan_full_runs }}"
               exit 1
               ;;
           esac
+          
           RUNNER_TYPE="self-hosted"
+          
           # Trigger the main deploy.yml workflow
           curl -X POST \
             -H "Authorization: Bearer $TOKEN_GITHUB" \
@@ -292,22 +304,48 @@ jobs:
           
           echo "✅ Main workflow triggered successfully with action: $ACTION"
 
+      - name: Step 4 - Skipped (First Run + Plan)
+        # Show when Step 4 is skipped
+        if: ${{ github.event.inputs.first_run == 'true' && github.event.inputs.action == 'plan' }}
+        run: |
+          echo "================================================"
+          echo "STEP 4: SKIPPED - First Run + Plan Mode"
+          echo "================================================"
+          echo "Step 4 was skipped because this is a first run plan."
+          echo "Step 3 already performed the full planning with bootstrap protection."
+          echo "To deploy the infrastructure, run this workflow again with 'apply' or 'plan-and-apply'."
+
       - name: Summary
         if: always()
         run: |
           echo "## 🚀 Terraform Initialization Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Parameter | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Environment** | \`${{ github.event.inputs.env }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Action** | \`${{ github.event.inputs.action }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **First Run** | \`${{ github.event.inputs.first_run }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Plan Full Runs** | \`${{ github.event.inputs.plan_full_runs }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| **Environment** | \`${{ github.event.inputs.env }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **action** | \`${{ github.event.inputs.action }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **plan_full_runs** | \`${{ github.event.inputs.plan_full_runs }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Step 1** | Full Infrastructure Apply ✅ |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Step 2** | Targeted Main Infrastructure ✅ |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Step 3** | Full Infrastructure Apply (Final) ✅ |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Step 4** | Triggered Main Workflow on Runner ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Step 1** | VPC + EKS Infrastructure ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Step 2** | Runner Infrastructure ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Step 3** | VPC Peering + Security Groups ✅ |" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ github.event.inputs.first_run }}" == "true" && "${{ github.event.inputs.action }}" == "plan" ]]; then
+            echo "| **Step 4** | Skipped (First Run + Plan) ⏭️ |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| **Step 4** | Triggered Main Workflow on Runner ✅ |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🔄 Initialization Process Complete" >> $GITHUB_STEP_SUMMARY
           echo "- Infrastructure deployed in multiple stages for dependency resolution" >> $GITHUB_STEP_SUMMARY
-          echo "- Main workflow triggered on self-hosted runner for full deployment" >> $GITHUB_STEP_SUMMARY
-
+          
+          if [[ "${{ github.event.inputs.first_run }}" == "true" && "${{ github.event.inputs.action }}" == "plan" ]]; then
+            echo "- **First run planning completed** - Run again with 'apply' to deploy" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Main workflow triggered on self-hosted runner for full deployment" >> $GITHUB_STEP_SUMMARY
+          fi
+          
