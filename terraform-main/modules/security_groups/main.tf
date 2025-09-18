@@ -669,25 +669,25 @@ resource "aws_vpc_security_group_ingress_rule" "eks_api_from_cidrs" {
 #   depends_on = [ null_resource.validate_peering_outputs ]
 # }
 
-resource "aws_vpc_security_group_ingress_rule" "eks_api_from_github_runner" {
+# resource "aws_vpc_security_group_ingress_rule" "eks_api_from_github_runner" {
   
-  security_group_id = var.cluster_security_group_id
-  from_port         = 443
-  to_port           = 443
-  ip_protocol       = "tcp"
-  cidr_ipv4         = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
-  description       = "PEERING: Allow Peered network - github runner- access to the cluster API"
+#   security_group_id = var.cluster_security_group_id
+#   from_port         = 443
+#   to_port           = 443
+#   ip_protocol       = "tcp"
+#   cidr_ipv4         = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
+#   description       = "PEERING: Allow Peered network - github runner- access to the cluster API"
   
-  tags = {
-    Project     = var.project_tag
-    Environment = var.environment
-    Purpose = "external-access"
-    Rule    = "api-from-cidr"
-    Source  = "Github-Runner-VPC-CIDR"
-  }
+#   tags = {
+#     Project     = var.project_tag
+#     Environment = var.environment
+#     Purpose = "external-access"
+#     Rule    = "api-from-cidr"
+#     Source  = "Github-Runner-VPC-CIDR"
+#   }
 
-  depends_on = [ null_resource.validate_outputs_or_fail ]
-}
+#   depends_on = [ null_resource.validate_outputs_or_fail ]
+# }
 
 # ================================
 # SECTION 3: INTRA-CLUSTER COMMUNICATION
