@@ -170,21 +170,21 @@ module "security_groups" {
   node_groups = var.eks_node_groups
 }
 
-module "launch_templates" {
-  source = "../modules/eks/launch_templates"
+# module "launch_templates" {
+#   source = "../modules/eks/launch_templates"
 
-  project_tag        = var.project_tag
-  environment        = var.environment
+#   project_tag        = var.project_tag
+#   environment        = var.environment
 
-  # Node group configuration
-  node_groups = var.eks_node_groups
+#   # Node group configuration
+#   node_groups = var.eks_node_groups
 
-  cluster_name     = module.eks.cluster_name
-  cluster_endpoint = module.eks.cluster_endpoint
-  cluster_ca       = module.eks.cluster_ca
-  cluster_cidr     = module.eks.cluster_cidr
-  node_security_group_ids = module.security_groups.eks_node_security_group_ids
-}
+#   cluster_name     = module.eks.cluster_name
+#   cluster_endpoint = module.eks.cluster_endpoint
+#   cluster_ca       = module.eks.cluster_ca
+#   cluster_cidr     = module.eks.cluster_cidr
+#   node_security_group_ids = module.security_groups.eks_node_security_group_ids
+# }
 
 module "node_groups" {
   source = "../modules/eks/node_groups"
@@ -403,56 +403,56 @@ module "argocd_templates" {
   app_of_apps_target_revision = var.argocd_app_of_apps_target_revision
 }
 
-module "gitops_bootstrap" {
-  count = (var.bootstrap_mode || var.update_apps) ? 1 : 0
+# module "gitops_bootstrap" {
+#   count = (var.bootstrap_mode || var.update_apps) ? 1 : 0
   
-  source = "../modules/gitops/bootstrap"
+#   source = "../modules/gitops/bootstrap"
   
-  # Pass the raw data to module
-  # current_files_data = data.github_repository_file.current_gitops_files
-  # gitops_repo_name   = data.github_repository.gitops_repo.name
+#   # Pass the raw data to module
+#   # current_files_data = data.github_repository_file.current_gitops_files
+#   # gitops_repo_name   = data.github_repository.gitops_repo.name
 
-  # GitHub Configuration
-  github_gitops_repo      = var.github_gitops_repo
-  github_org              = var.github_org  
-  github_application_repo = var.github_application_repo
-  github_token            = var.github_token
+#   # GitHub Configuration
+#   github_gitops_repo      = var.github_gitops_repo
+#   github_org              = var.github_org  
+#   github_application_repo = var.github_application_repo
+#   github_token            = var.github_token
 
-  # Project Configuration
-  project_tag   = var.project_tag
-  environment   = var.environment
+#   # Project Configuration
+#   project_tag   = var.project_tag
+#   environment   = var.environment
   
-  # ECR Repository URLs
-  ecr_frontend_repo_url = module.ecr.ecr_repository_urls["welcome"]
+#   # ECR Repository URLs
+#   ecr_frontend_repo_url = module.ecr.ecr_repository_urls["welcome"]
   
-  # Frontend Configuration
-  frontend_namespace              = var.frontend_service_namespace
-  frontend_service_account_name   = var.frontend_service_account_name
-  frontend_container_port         = var.frontend_container_port
-  frontend_ingress_host           = "${var.frontend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
-  frontend_external_dns_hostname  = "${var.frontend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
-  frontend_argocd_app_name        = var.frontend_argocd_app_name
-  frontend_helm_release_name      = var.frontend_helm_release_name
+#   # Frontend Configuration
+#   frontend_namespace              = var.frontend_service_namespace
+#   frontend_service_account_name   = var.frontend_service_account_name
+#   frontend_container_port         = var.frontend_container_port
+#   frontend_ingress_host           = "${var.frontend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
+#   frontend_external_dns_hostname  = "${var.frontend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
+#   frontend_argocd_app_name        = var.frontend_argocd_app_name
+#   frontend_helm_release_name      = var.frontend_helm_release_name
   
-  # Shared ALB Configuration
-  alb_group_name         = local.alb_group_name
-  alb_security_groups    = module.security_groups.joined_security_group_ids
-  acm_certificate_arn    = module.acm.this_certificate_arn
+#   # Shared ALB Configuration
+#   alb_group_name         = local.alb_group_name
+#   alb_security_groups    = module.security_groups.joined_security_group_ids
+#   acm_certificate_arn    = module.acm.this_certificate_arn
   
-  # ArgoCD Configuration
-  argocd_namespace = var.argocd_namespace
-  argocd_project_yaml     = module.argocd_templates.project_yaml
-  argocd_app_of_apps_yaml = module.argocd_templates.app_of_apps_yaml
+#   # ArgoCD Configuration
+#   argocd_namespace = var.argocd_namespace
+#   argocd_project_yaml     = module.argocd_templates.project_yaml
+#   argocd_app_of_apps_yaml = module.argocd_templates.app_of_apps_yaml
   
-  # Control Variables
-  bootstrap_mode = var.bootstrap_mode
-  update_apps    = var.update_apps
-  auto_merge_pr = var.auto_merge_pr
+#   # Control Variables
+#   bootstrap_mode = var.bootstrap_mode
+#   update_apps    = var.update_apps
+#   auto_merge_pr = var.auto_merge_pr
   
-  # Branch details for PR creations
-  branch_name_prefix  = var.branch_name_prefix
-  target_branch       = var.gitops_target_branch
-}
+#   # Branch details for PR creations
+#   branch_name_prefix  = var.branch_name_prefix
+#   target_branch       = var.gitops_target_branch
+# }
 
 # the initial app_of_apps sync has been automated
 # this option requires argoCD to be created only AFTER everything else is ready
@@ -460,91 +460,91 @@ module "gitops_bootstrap" {
 # also, in this module the Project & App_of_apps will created (helm actually manages them both)
 #   the bootstrap module creates reference only copies of project/app of apps
           ####### important: App_of_Apps will only be set-up during the helm install
-module "argocd" {
-  source         = "../modules/helm/argocd"
+# module "argocd" {
+#   source         = "../modules/helm/argocd"
 
-  project_tag        = var.project_tag
-  environment        = var.environment
+#   project_tag        = var.project_tag
+#   environment        = var.environment
 
-  chart_version         = var.argocd_chart_version
-  service_account_name  = local.argocd_service_account_name
-  release_name          = "argocd-${var.environment}"
-  namespace             = var.argocd_namespace
+#   chart_version         = var.argocd_chart_version
+#   service_account_name  = local.argocd_service_account_name
+#   release_name          = "argocd-${var.environment}"
+#   namespace             = var.argocd_namespace
   
-  # EKS related variables
-  oidc_provider_arn     = module.eks.oidc_provider_arn
-  oidc_provider_url     = module.eks.cluster_oidc_issuer_url
+#   # EKS related variables
+#   oidc_provider_arn     = module.eks.oidc_provider_arn
+#   oidc_provider_url     = module.eks.cluster_oidc_issuer_url
 
-  # ALB and networking
-  domain_name                 = "${var.argocd_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
-  ingress_controller_class    = var.ingress_controller_class
-  alb_group_name              = local.alb_group_name
-  acm_cert_arn                = module.acm.this_certificate_arn
-  argocd_allowed_cidr_blocks  = var.argocd_allowed_cidr_blocks
-  alb_security_groups         = module.security_groups.joined_security_group_ids
+#   # ALB and networking
+#   domain_name                 = "${var.argocd_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
+#   ingress_controller_class    = var.ingress_controller_class
+#   alb_group_name              = local.alb_group_name
+#   acm_cert_arn                = module.acm.this_certificate_arn
+#   argocd_allowed_cidr_blocks  = var.argocd_allowed_cidr_blocks
+#   alb_security_groups         = module.security_groups.joined_security_group_ids
 
-  # Github SSO
-  github_admin_team             = var.github_admin_team
-  github_readonly_team          = var.github_readonly_team
-  argocd_github_sso_secret_name = local.argocd_github_sso_secret_name
-  github_org                    = var.github_org
+#   # Github SSO
+#   github_admin_team             = var.github_admin_team
+#   github_readonly_team          = var.github_readonly_team
+#   argocd_github_sso_secret_name = local.argocd_github_sso_secret_name
+#   github_org                    = var.github_org
 
-  # ArgoCD Configuration
-  argocd_project_yaml     = module.argocd_templates.project_yaml
-  argocd_app_of_apps_yaml = module.argocd_templates.app_of_apps_yaml
+#   # ArgoCD Configuration
+#   argocd_project_yaml     = module.argocd_templates.project_yaml
+#   argocd_app_of_apps_yaml = module.argocd_templates.app_of_apps_yaml
 
-  # Secret configuration
-  secret_arn = module.secrets_app_envs.app_secrets_arns["${var.argocd_aws_secret_key}"]
+#   # Secret configuration
+#   secret_arn = module.secrets_app_envs.app_secrets_arns["${var.argocd_aws_secret_key}"]
 
-  # ================================
-  # Resource Configuration - Server
-  # ================================
-  server_memory_requests = var.argocd_server_memory_requests
-  server_cpu_requests    = var.argocd_server_cpu_requests
-  server_memory_limits   = var.argocd_server_memory_limits
-  server_cpu_limits      = var.argocd_server_cpu_limits
+#   # ================================
+#   # Resource Configuration - Server
+#   # ================================
+#   server_memory_requests = var.argocd_server_memory_requests
+#   server_cpu_requests    = var.argocd_server_cpu_requests
+#   server_memory_limits   = var.argocd_server_memory_limits
+#   server_cpu_limits      = var.argocd_server_cpu_limits
   
-  # ================================
-  # Resource Configuration - Controller
-  # ================================
-  controller_memory_requests = var.argocd_controller_memory_requests
-  controller_cpu_requests    = var.argocd_controller_cpu_requests
-  controller_memory_limits   = var.argocd_controller_memory_limits
-  controller_cpu_limits      = var.argocd_controller_cpu_limits
+#   # ================================
+#   # Resource Configuration - Controller
+#   # ================================
+#   controller_memory_requests = var.argocd_controller_memory_requests
+#   controller_cpu_requests    = var.argocd_controller_cpu_requests
+#   controller_memory_limits   = var.argocd_controller_memory_limits
+#   controller_cpu_limits      = var.argocd_controller_cpu_limits
   
-  # ================================
-  # Resource Configuration - Repo Server
-  # ================================
-  repo_server_memory_requests = var.argocd_repo_server_memory_requests
-  repo_server_cpu_requests    = var.argocd_repo_server_cpu_requests
-  repo_server_memory_limits   = var.argocd_repo_server_memory_limits
-  repo_server_cpu_limits      = var.argocd_repo_server_cpu_limits
+#   # ================================
+#   # Resource Configuration - Repo Server
+#   # ================================
+#   repo_server_memory_requests = var.argocd_repo_server_memory_requests
+#   repo_server_cpu_requests    = var.argocd_repo_server_cpu_requests
+#   repo_server_memory_limits   = var.argocd_repo_server_memory_limits
+#   repo_server_cpu_limits      = var.argocd_repo_server_cpu_limits
   
-  # ================================
-  # Resource Configuration - Dex Server
-  # ================================
-  dex_memory_requests = var.argocd_dex_memory_requests
-  dex_cpu_requests    = var.argocd_dex_cpu_requests
-  dex_memory_limits   = var.argocd_dex_memory_limits
-  dex_cpu_limits      = var.argocd_dex_cpu_limits
+#   # ================================
+#   # Resource Configuration - Dex Server
+#   # ================================
+#   dex_memory_requests = var.argocd_dex_memory_requests
+#   dex_cpu_requests    = var.argocd_dex_cpu_requests
+#   dex_memory_limits   = var.argocd_dex_memory_limits
+#   dex_cpu_limits      = var.argocd_dex_cpu_limits
   
-  # ================================
-  # Metrics Configuration
-  # ================================
-  server_metrics_enabled     = var.argocd_server_metrics_enabled
-  controller_metrics_enabled = var.argocd_controller_metrics_enabled
-  repo_server_metrics_enabled = var.argocd_repo_server_metrics_enabled
-  dex_metrics_enabled        = var.argocd_dex_metrics_enabled
+#   # ================================
+#   # Metrics Configuration
+#   # ================================
+#   server_metrics_enabled     = var.argocd_server_metrics_enabled
+#   controller_metrics_enabled = var.argocd_controller_metrics_enabled
+#   repo_server_metrics_enabled = var.argocd_repo_server_metrics_enabled
+#   dex_metrics_enabled        = var.argocd_dex_metrics_enabled
 
-  depends_on = [
-    module.eks,
-    module.node_groups,
-    module.aws_load_balancer_controller.webhook_ready,
-    module.acm,
-    module.external_dns,
-    module.secrets_app_envs
-  ]
-}
+#   depends_on = [
+#     module.eks,
+#     module.node_groups,
+#     module.aws_load_balancer_controller.webhook_ready,
+#     module.acm,
+#     module.external_dns,
+#     module.secrets_app_envs
+#   ]
+# }
 
 module "save_grafana_password" {
   source = "../modules/secrets-manager"
@@ -556,69 +556,69 @@ module "save_grafana_password" {
   app_secrets_config            = {}
 }
 
-module "monitoring" {
-  count = var.enable_monitoring ? 1 : 0
+# module "monitoring" {
+#   count = var.enable_monitoring ? 1 : 0
   
-  source = "../modules/helm/kube-prometheus-stack"
+#   source = "../modules/helm/kube-prometheus-stack"
   
-  project_tag   = var.project_tag
-  environment   = var.environment
+#   project_tag   = var.project_tag
+#   environment   = var.environment
   
-  # Chart configuration
-  chart_version = var.kube_prometheus_stack_chart_version
-  release_name  = "${var.monitoring_release_name}-${var.environment}"
-  namespace     = var.monitoring_namespace
+#   # Chart configuration
+#   chart_version = var.kube_prometheus_stack_chart_version
+#   release_name  = "${var.monitoring_release_name}-${var.environment}"
+#   namespace     = var.monitoring_namespace
   
-  # Domains
-  domain_name       = var.domain_name
-  grafana_domain    = "${var.grafana_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
-  prometheus_domain = "${var.prometheus_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
+#   # Domains
+#   domain_name       = var.domain_name
+#   grafana_domain    = "${var.grafana_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
+#   prometheus_domain = "${var.prometheus_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
   
-  # Ingress configuration
-  alb_group_name            = local.alb_group_name
-  alb_security_groups       = module.security_groups.joined_security_group_ids
-  ingress_controller_class  = var.ingress_controller_class
-  acm_certificate_arn       = module.acm.this_certificate_arn
-  prometheus_allowed_cidr_blocks = var.prometheus_allowed_cidr_blocks
-  grafana_allowed_cidr_blocks    = var.grafana_allowed_cidr_blocks
+#   # Ingress configuration
+#   alb_group_name            = local.alb_group_name
+#   alb_security_groups       = module.security_groups.joined_security_group_ids
+#   ingress_controller_class  = var.ingress_controller_class
+#   acm_certificate_arn       = module.acm.this_certificate_arn
+#   prometheus_allowed_cidr_blocks = var.prometheus_allowed_cidr_blocks
+#   grafana_allowed_cidr_blocks    = var.grafana_allowed_cidr_blocks
   
-  # Authentication
-  grafana_admin_password = random_password.generated_passwords["grafana_admin_password"].result
+#   # Authentication
+#   grafana_admin_password = random_password.generated_passwords["grafana_admin_password"].result
   
-  # Storage configuration
-  storage_class = var.monitoring_storage_class
+#   # Storage configuration
+#   storage_class = var.monitoring_storage_class
   
-  # Prometheus configuration
-  prometheus_retention      = var.prometheus_retention
-  prometheus_retention_size = var.prometheus_retention_size
-  prometheus_storage_size   = var.prometheus_storage_size
-  prometheus_cpu_requests   = var.prometheus_cpu_requests
-  prometheus_memory_requests = var.prometheus_memory_requests
-  prometheus_cpu_limits     = var.prometheus_cpu_limits
-  prometheus_memory_limits  = var.prometheus_memory_limits
+#   # Prometheus configuration
+#   prometheus_retention      = var.prometheus_retention
+#   prometheus_retention_size = var.prometheus_retention_size
+#   prometheus_storage_size   = var.prometheus_storage_size
+#   prometheus_cpu_requests   = var.prometheus_cpu_requests
+#   prometheus_memory_requests = var.prometheus_memory_requests
+#   prometheus_cpu_limits     = var.prometheus_cpu_limits
+#   prometheus_memory_limits  = var.prometheus_memory_limits
   
-  # Grafana configuration
-  grafana_storage_size    = var.grafana_storage_size
-  grafana_cpu_requests    = var.grafana_cpu_requests
-  grafana_memory_requests = var.grafana_memory_requests
-  grafana_cpu_limits      = var.grafana_cpu_limits
-  grafana_memory_limits   = var.grafana_memory_limits
+#   # Grafana configuration
+#   grafana_storage_size    = var.grafana_storage_size
+#   grafana_cpu_requests    = var.grafana_cpu_requests
+#   grafana_memory_requests = var.grafana_memory_requests
+#   grafana_cpu_limits      = var.grafana_cpu_limits
+#   grafana_memory_limits   = var.grafana_memory_limits
   
-  # AlertManager configuration
-  alertmanager_storage_size    = var.alertmanager_storage_size
-  alertmanager_cpu_requests    = var.alertmanager_cpu_requests
-  alertmanager_memory_requests = var.alertmanager_memory_requests
-  alertmanager_cpu_limits      = var.alertmanager_cpu_limits
-  alertmanager_memory_limits   = var.alertmanager_memory_limits
+#   # AlertManager configuration
+#   alertmanager_storage_size    = var.alertmanager_storage_size
+#   alertmanager_cpu_requests    = var.alertmanager_cpu_requests
+#   alertmanager_memory_requests = var.alertmanager_memory_requests
+#   alertmanager_cpu_limits      = var.alertmanager_cpu_limits
+#   alertmanager_memory_limits   = var.alertmanager_memory_limits
   
-  depends_on = [
-    module.eks,
-    module.node_groups,
-    module.aws_load_balancer_controller.webhook_ready,
-    module.external_dns,
-    module.ebs_csi_driver
-  ]
-}
+#   depends_on = [
+#     module.eks,
+#     module.node_groups,
+#     module.aws_load_balancer_controller.webhook_ready,
+#     module.external_dns,
+#     module.ebs_csi_driver
+#   ]
+# }
 
 module "service_monitors" {
   source = "../modules/monitoring/service-monitors"
