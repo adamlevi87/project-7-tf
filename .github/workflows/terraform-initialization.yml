@@ -25,7 +25,7 @@ on:
           - plan-and-apply
           # - destroy  # Different logic - TODO: implement later
       plan_full_runs:
-        description: "Plan before full deployment (steps 3-4)"
+        description: "Plan before full deployment (step 4) (other workflow trigger)"
         required: true
         default: true
         type: boolean
