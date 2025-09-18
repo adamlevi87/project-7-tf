@@ -1,46 +1,14 @@
-# Project-6: Enterprise Kubernetes Infrastructure with GitOps
+# Project-6 Infrastructure Setup Guide
 
-A production-ready, multi-stage Kubernetes infrastructure deployment system using Terraform, ArgoCD, and GitHub Actions. Features sophisticated bootstrap protection, VPC peering, and self-hosted GitHub runners.
-
-## Architecture Overview
-
-### Infrastructure Components
-
-**Main Infrastructure (`terraform-main/`)**
-- EKS Kubernetes cluster with private endpoints
-- VPC with public/private subnets across dynamically configured AZs (controlled via tfvars)
-- ArgoCD with GitHub SSO integration
-- AWS Load Balancer Controller
-- External DNS and ACM certificate management
-- Monitoring stack (Prometheus, Grafana)
-- External Secrets Operator (enables ArgoCD repository access and SSO initialization)
-
-**Runner Infrastructure (`terraform-runner-infra/`)**
-- Self-hosted GitHub runners in separate VPC
-- VPC peering to main infrastructure
-- Isolated networking for CI/CD operations
-
-**GitOps Repository Structure**
-```
-├── environments/
-│   └── dev/
-│       ├── apps/
-│       │   └── frontend/
-│       │       └── application.yaml    # Frontend application definition
-│       └── manifests/
-│           └── frontend/
-│               ├── infra-values.yaml   # Infrastructure values (Terraform managed)
-│               ├── digest-values.yaml  # Image digest values (App repo managed)
-│               └── app-values.yaml     # Application values (static)
-└── reference_only/*                    # All environments (dev, staging, prod)
-    ├── project/
-    │   └── project-6.yaml              # ArgoCD Project (reference)
-    └── app_of_apps.yaml                # App of Apps (reference)
-```
-
-The `reference_only/*` directory contains files for all environments that are created for documentation purposes only - the actual ArgoCD Project and App-of-Apps are deployed via Terraform Helm configuration.
+## Overview
+This project deploys an EKS cluster with ArgoCD, a sample application, and GitOps workflow using Terraform.
 
 ## Prerequisites
+- AWS CLI configured with appropriate permissions
+- Terraform installed
+- GitHub account with organization access
+
+## Setup Instructions
 
 ### 1. AWS Infrastructure Prerequisites
 
@@ -112,8 +80,7 @@ You cannot choose the URL arbitrarily - it must match your Terraform domain conf
 Create two teams in your GitHub organization:
 - **developers:** Read-only access to ArgoCD
 - **devops:** Full admin access to ArgoCD
-
-Update their names in the tfvars (`github_admin_team`, `github_readonly_team`)
+* Update their names in the tfvars (github_admin_team ,github_readonly_team)
 
 ### 6. Repository Secrets Configuration
 
@@ -138,8 +105,7 @@ OAUTH_GITHUB_CLIENT_SECRET_TF_DEV = YOUR_OAUTH_CLIENT_SECRET
 ```
 
 **Note:** For the private key, base64 encode the entire key content (including BEGIN/END lines) as a single line. Ensure no extra spaces or newlines are added before or after the encoded content when pasting into the GitHub secret field.
-
-Encode from a Linux machine:
+suggestion: encode from a linux machine:
 ```bash
 cat your-private-key.pem | base64 -w 0 > encoded.txt
 ```
@@ -150,85 +116,11 @@ Set these in your **project-6-tf** repository:
 AWS_REGION = us-east-1
 ```
 
-## Deployment Workflow
-
-### Bootstrap Process
-
-The system uses a sophisticated 4-stage bootstrap process to handle complex dependencies:
-
-**Stage 1: Core Infrastructure**
-- VPC and EKS cluster deployment
-- Targets: `module.vpc`, `module.eks`
-
-**Stage 2: Runner Infrastructure** 
-- GitHub self-hosted runners
-- Full terraform-runner-infra deployment
-
-**Stage 3: Networking & Security**
-- VPC peering between infrastructures
-- Security group configurations with bootstrap protection
-- Targets: `module.vpc_peering`, `module.security_groups`
-
-**Stage 4: Complete Deployment**
-- All remaining AWS resources and modules
-- Full ArgoCD and application deployment
-- Runs on self-hosted runners (private EKS access)
-
-### Workflow Types
-
-**Initialization Workflow (`terraform-initialization.yml`)**
-- Multi-stage bootstrap deployment
-- Runs on GitHub-hosted runners
-- Handles initial deployment dependencies
-
-**Main Deployment Workflow (`deploy.yml`)**
-- Complete infrastructure management
-- Runs on self-hosted runners
-- Supports GitOps operations
-
-## Deployment Instructions
-
-### First Deployment
-
-1. **Initial Bootstrap**
-   ```
-   Workflow: terraform-initialization
-   Environment: dev
-   Action: plan-and-apply  
-   First Run: true
-   Plan Full Runs: false
-   ```
-
-2. **Verify Infrastructure**
-   - Check EKS cluster status
-   - Verify self-hosted runners are online
-   - Application repository automatically triggers build and ECR push
-
-3. **Access ArgoCD**
-   - URL: Automatically generated as `https://{argocd_base_domain_name}-{environment}.{subdomain_name}.{domain_name}`
-   - For default config: `https://argocd-dev.project-6.projects-devops.cfd`
-   - Login with GitHub SSO (authorize the application on first login)
-
-### Subsequent Updates
-
-**Infrastructure Changes via Main Workflow:**
-```
-Workflow: deploy
-Environment: dev
-Action: plan (or apply)
-GitOps Mode: update-infra (or bootstrap for full changes)
-```
-
-**Application Updates:**
-- Handled automatically via GitOps
-- ArgoCD monitors application repository
-- Automatic sync on changes
-
-### Manual Terraform Commands (Alternative)
+### 7. Deployment
 
 1. **Initialize Terraform:**
    ```bash
-   cd terraform-main/main
+   cd main
    terraform init
    ```
 
@@ -245,7 +137,12 @@ GitOps Mode: update-infra (or bootstrap for full changes)
      --var="bootstrap_mode=true"
    ```
 
-4. **Subsequent updates:**
+4. **Access ArgoCD:**
+   - URL: Automatically generated as `https://{argocd_base_domain_name}-{environment}.{subdomain_name}.{domain_name}`
+   - For default config: `https://argocd-dev.project-6.projects-devops.cfd`
+   - Login with GitHub SSO (authorize the application on first login)
+
+5. **Subsequent updates:**
    ```bash
    terraform apply --auto-approve \
      --var-file="../environments/dev/terraform.tfvars" \
@@ -253,84 +150,16 @@ GitOps Mode: update-infra (or bootstrap for full changes)
      --var="update_apps=true"
    ```
 
-## Key Features
-
-### Bootstrap Protection
-- Handles "chicken-and-egg" dependency problems
-- Graceful planning when remote state doesn't exist
-- Conditional resource creation based on deployment stage
-
-### GitOps Integration
-- ArgoCD with GitHub SSO
-- Multi-source applications (charts + values)
-- Automatic PR creation and merging for both:
-  - Infrastructure changes (Terraform updates to GitOps values)
-  - Application changes (Application repository updates to digest values)
-- Application and infrastructure separation
-
-### Security
-- Private EKS endpoints
-- VPC peering for runner access
-- OIDC-based authentication
-- Least-privilege IAM roles
-
-### Networking
-- Multi-AZ deployment (number of AZs dynamically configured via tfvars)
-- NAT gateway configurations
-- Application Load Balancer with SSL
-- External DNS integration
-
-## Repository Structure
-
-```
-├── requirements-tf/             # Prerequisites setup
-├── terraform-main/
-│   ├── main/                    # Main configuration
-│   ├── modules/                 # Reusable modules
-│   └── environments/           # Environment-specific configs
-├── terraform-runner-infra/
-│   ├── main/                    # Runner configuration
-│   ├── modules/                 # Runner modules  
-│   └── environments/           # Runner environment configs
-├── .github/workflows/
-│   ├── terraform-initialization.yml
-│   └── deploy.yml
-└── scripts/                     # Utility scripts
-```
-
 ## Workflow Variables Summary
 
-- **auto_merge_pr:** Controls automatic PR merging in GitOps repository (triggers a GitOps repo workflow to merge)
-- **bootstrap_mode:** Creates yamls in the GitOps Repository (Creates a PR). ArgoCD project and app-of-apps yaml are for reference only (they are deployed using helm). Applications and their value files are also created. This mode also triggers the Application Repository's workflow that builds the app, pushes to ECR, creates a GitOps PR to update the digest, and triggers a GitOps Repo workflow to merge it.
+- **auto_merge_pr:** Controls automatic PR merging in GitOps repository (triggers a Gitops repo workflow to merge)
+- **bootstrap_mode:** Creates yamls in the GitOps Repository: (Creates a PR)
+                        ArgoCD project and app-of-apps yaml are for reference only (they are deployed using helm).Applications and their value files are also created.
+                        
+This mode also Triggers the Application Repository's workflow that builds the app, pushes to ECR, creates a GitOps PR to update the digest, and triggers a Gitops Repo workflow to merge it.
 - **update_apps:** Updates infrastructure values in GitOps repository only (Creates a PR)
-- **first_run:** Handles initial deployment bootstrap protection
 
-## Advanced Configuration
-
-### NAT Gateway Modes
-- `single`: Single NAT gateway (cost-optimized)
-- `real`: Multiple NAT gateways (high availability)
-
-### Environment Scaling
-- Configurable node groups
-- Auto-scaling based on workload
-- Resource limits and requests
-
-### Monitoring
-- Prometheus metrics collection
-- Grafana dashboards
-- ArgoCD operational metrics
-
-## Security Considerations
-
-- All EKS endpoints are private
-- VPC peering provides secure runner access
-- OIDC authentication eliminates long-lived credentials  
-- Least-privilege IAM policies
-- Encrypted state storage
-- Network segmentation
-
-## Common Issues and Solutions
+## Troubleshooting
 
 ### ArgoCD Access Issues
 - Verify DNS propagation (can take 10-20 minutes)
