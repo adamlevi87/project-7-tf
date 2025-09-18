@@ -8,10 +8,10 @@ output "main_vpc_info" {
   value = {
     vpc_id                     = module.vpc.vpc_id
     vpc_cidr_block            = module.vpc.vpc_cidr_block
-    private_subnet_ids        = module.vpc.private_subnet_ids
-    private_route_table_ids   = module.vpc.private_route_table_ids
-    availability_zones        = keys(local.private_subnet_cidrs)
-    region                    = var.aws_region
+    #private_subnet_ids        = module.vpc.private_subnet_ids
+    #private_route_table_ids   = module.vpc.private_route_table_ids
+    #availability_zones        = keys(local.private_subnet_cidrs)
+    #region                    = var.aws_region
   }
   sensitive = false
 }
@@ -23,10 +23,10 @@ output "eks_cluster_info" {
   description = "EKS cluster information for runner configuration"
   value = {
     cluster_name     = module.eks.cluster_name
-    cluster_endpoint = module.eks.cluster_endpoint
-    cluster_private_endpoint = module.eks.cluster_endpoint
-    cluster_ca       = module.eks.cluster_ca
-    cluster_region   = var.aws_region
+    #cluster_endpoint = module.eks.cluster_endpoint
+    #cluster_private_endpoint = module.eks.cluster_endpoint
+    #cluster_ca       = module.eks.cluster_ca
+    #cluster_region   = var.aws_region
   }
   sensitive = false
 }
