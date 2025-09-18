@@ -33,28 +33,28 @@ module "vpc" {
     private_subnet_cidrs = local.private_subnet_cidrs
 }
 
-module "vpc_peering" {
-  #count  = var.initialize_run ? 0 : 1
+# module "vpc_peering" {
+#   #count  = var.initialize_run ? 0 : 1
 
-  source = "../modules/vpc_peering"
+#   source = "../modules/vpc_peering"
 
-  project_tag = var.project_tag
-  environment = var.environment
+#   project_tag = var.project_tag
+#   environment = var.environment
 
-  # needed for the local exec
-  aws_region = var.aws_region
+#   # needed for the local exec
+#   aws_region = var.aws_region
 
-  #initialize_run = var.initialize_run
+#   #initialize_run = var.initialize_run
   
-  # # Route table IDs for creating routes 
-  # peering_connection_id = try(data.terraform_remote_state.runner_infra.outputs.vpc_peering_connection_id, "fake-placeholder")
-  # runner_vpc_cidr      = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
+#   # # Route table IDs for creating routes 
+#   # peering_connection_id = try(data.terraform_remote_state.runner_infra.outputs.vpc_peering_connection_id, "fake-placeholder")
+#   # runner_vpc_cidr      = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
   
-  # Route table IDs for creating routes
-  private_route_table_ids = module.vpc.private_route_table_ids
+#   # Route table IDs for creating routes
+#   private_route_table_ids = module.vpc.private_route_table_ids
   
-  depends_on = [module.vpc]
-}
+#   depends_on = [module.vpc]
+# }
 
 # module "kms" {
 #   source = "../modules/kms"

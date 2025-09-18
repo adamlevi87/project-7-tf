@@ -94,10 +94,10 @@ locals {
     alb_group_name                  = "${var.project_tag}-${var.environment}-alb-shared-group"
 
     
-    autoscaling_group_arns = [
-        for asg_name in module.node_groups.autoscaling_group_arns :
-        "arn:aws:autoscaling:${var.aws_region}:${local.account_id}:autoScalingGroup:*:autoScalingGroupName/${asg_name}"
-    ]
+    # autoscaling_group_arns = [
+    #     for asg_name in module.node_groups.autoscaling_group_arns :
+    #     "arn:aws:autoscaling:${var.aws_region}:${local.account_id}:autoScalingGroup:*:autoScalingGroupName/${asg_name}"
+    # ]
 
     # Convert short names to full ARNs
     s3_allowed_principal_arns = [
