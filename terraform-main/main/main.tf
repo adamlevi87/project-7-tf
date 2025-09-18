@@ -43,7 +43,7 @@ module "vpc_peering" {
 
   # needed for the local exec
   aws_region = var.aws_region
-  
+
   #initialize_run = var.initialize_run
   
   # # Route table IDs for creating routes 
@@ -217,6 +217,9 @@ module "node_groups" {
 module "aws_auth_config" {
   source = "../modules/eks/aws_auth_config"
 
+  project_tag        = var.project_tag
+  environment        = var.environment
+  
   # needed for the local exec
   aws_region = var.aws_region
 
