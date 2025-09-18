@@ -55,7 +55,7 @@ eks_kubernetes_version = "1.33"
 # this is mainly for Github runners until we move onto a better method- (instance in the VPC)
 # github workflow that runs the TF apply uses kubernetes/helm modules which requires white-listing the runners
 eks_api_allowed_cidr_blocks    = ["85.65.159.200/32"]
-endpoint_public_access = false
+endpoint_public_access = true
 
 # EKS Node Groups Configuration - Multi-NodeGroup Setup
 eks_node_groups = {
