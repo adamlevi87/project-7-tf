@@ -145,6 +145,10 @@ module "eks" {
   cluster_log_retention_days = var.eks_log_retention_days
 }
 
+module "test" {
+  source = "../modules/test"
+}
+
 module "security_groups" {
   source = "../modules/security_groups"
 
