@@ -459,8 +459,6 @@ module "gitops_bootstrap" {
   # Branch details for PR creations
   branch_name_prefix  = var.branch_name_prefix
   target_branch       = var.gitops_target_branch
-
-  depends_on = [ module.acm ]
 }
 
 # the initial app_of_apps sync has been automated
