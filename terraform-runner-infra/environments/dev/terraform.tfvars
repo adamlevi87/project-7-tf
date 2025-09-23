@@ -3,7 +3,7 @@
 # ================================
 # General Configuration
 # ================================
-project_tag = "project-6"
+project_tag = "project-7"
 environment = "dev"
 aws_region  = "us-east-1"
 initialize_run = false
@@ -20,7 +20,7 @@ enable_vpc_peering = true
 # GitHub Configuration
 # ================================
 github_org              = "adamlevi87"
-github_terraform_repo   = "project-6-tf"
+github_terraform_repo   = "project-7-tf"
 
 # GitHub token will be provided via environment variable:
 # export TF_VAR_github_token="your-github-pat-token"
@@ -49,7 +49,7 @@ runner_labels = [
   "terraform", 
   "aws",
   "runner-infra",
-  "project-6",
+  "project-7",
   "dev"
 ]
 

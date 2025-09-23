@@ -8,7 +8,7 @@ aws_region = "us-east-1"
 
 # Project configuration
 environment = "dev"
-project_tag = "project-6"
+project_tag = "project-7"
 initialize_run = false
 skip_runner_integration=false
 # ================================
@@ -30,21 +30,21 @@ additional_availability_zones = 1  # Can be reduced in single mode without affec
 enable_lifecycle_policy = true
 s3_policy_deny_rule_name = "DenyAllExceptions"
 s3_allowed_principals = [
-  "role/project-6-dev-initial-role-for-tf",
+  "role/project-7-dev-initial-role-for-tf",
   "user/adam.local", 
   "user/adam.login"
 ]
 # ================================
 # ECR Configurations
 # ================================
-ecr_repository_name = "project-6"
+ecr_repository_name = "project-7"
 ecr_repositories_applications = ["welcome"]
 
 # ================================
 # ROUTE53 Configurations (domains,subdomains)
 # ================================
 domain_name = "projects-devops.cfd"
-subdomain_name = "project-6"
+subdomain_name = "project-7"
 
 # ================================
 # EKS Cluster Configurations
@@ -107,9 +107,9 @@ frontend_service_account_name = "frontend-sa"
 
 # Github Details
 github_org = "adamlevi87"
-github_application_repo = "project-6-app"
-github_gitops_repo  = "project-6-gitops"
-github_terraform_repo  = "project-6-tf"
+github_application_repo = "project-7-app"
+github_gitops_repo  = "project-7-gitops"
+github_terraform_repo  = "project-7-tf"
 # Groups for SSO permissions (Github SSO for ArgoCD)
 github_admin_team = "devops"
 github_readonly_team = "developers"
