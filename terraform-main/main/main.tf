@@ -746,22 +746,22 @@ module "repo_secrets" {
   }
 }
 
-module "trigger_app_build" {
-  count = var.bootstrap_mode ? 1 : 0
+# module "trigger_app_build" {
+#   count = var.bootstrap_mode ? 1 : 0
 
-  source = "../modules/github/trigger-app-build"
+#   source = "../modules/github/trigger-app-build"
   
-  github_token            = var.github_token
-  github_org              = var.github_org
-  github_application_repo = var.github_application_repo
-  environment             = var.environment
+#   github_token            = var.github_token
+#   github_org              = var.github_org
+#   github_application_repo = var.github_application_repo
+#   environment             = var.environment
   
-  depends_on = [
-    module.ecr,
-    module.repo_secrets,
-    module.repo_ecr_access
-  ]
-}
+#   depends_on = [
+#     module.ecr,
+#     module.repo_secrets,
+#     module.repo_ecr_access
+#   ]
+# }
 
 module "ebs_csi_driver" {
   source = "../modules/helm/ebs-csi-driver"
