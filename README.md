@@ -83,7 +83,7 @@ Create a fine-grained PAT at: https://github.com/settings/personal-access-tokens
    - Note the App ID from the app settings page
 4. Install the app: (it's available in the same window you were just at)
    - Go to https://github.com/settings/installations
-   - Install app on both application and GitOps repositories
+   - Install app and give it permissions over both application and GitOps repositories
    - Note the Installation ID from the URL
 
 ### 4. GitHub OAuth Application for ArgoCD SSO
