@@ -79,7 +79,8 @@ Create a fine-grained PAT at: https://github.com/settings/personal-access-tokens
    - **Repository permissions:** Contents (read)
    - **Installation:** Only on this account
 3. After creation:
-   - Generate and download private key
+   - Generate a Client secret
+   - Generate and download private key (at the bottom)
    - Note the App ID from the app settings page
 4. Install the app: (it's available in the same window you were just at)
    - Go to https://github.com/settings/installations
