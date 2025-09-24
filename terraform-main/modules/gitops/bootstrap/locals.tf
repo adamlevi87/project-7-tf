@@ -37,6 +37,8 @@ locals {
     alb_security_groups             = var.alb_security_groups
     acm_certificate_arn             = var.acm_certificate_arn
     frontend_external_dns_hostname  = var.frontend_external_dns_hostname
+    github_org                      = var.github_org
+    github_application_repo         = var.github_application_repo
   }
   
   #Template variables for frontend Application.yaml

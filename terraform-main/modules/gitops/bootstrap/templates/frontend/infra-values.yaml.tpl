@@ -38,3 +38,8 @@ ingress:
     # External DNS annotation (optional - helps external-dns identify the record)
     external-dns.alpha.kubernetes.io/hostname: "${frontend_external_dns_hostname}"
 
+# In infra-values.yaml or app-values.yaml
+cosign:
+  enabled: true
+  certificateIdentity: "https://github.com/${github_org}/${github_application_repo}"
+  oidcIssuer: "https://token.actions.githubusercontent.com"
