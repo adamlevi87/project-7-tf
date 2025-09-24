@@ -165,16 +165,22 @@ elif [[ "$SELECTION_METHOD" == "filter" ]]; then
     # 'module.secrets.aws_secretsmanager_secret_version.secrets\[\"rds-password\"\]'
     # 'module.secrets.random_password.generated_passwords\[\"rds-password\"\]'
     # Route53
-    'module.route53.aws_route53_zone.this'
+    #'module.route53.aws_route53_zone.this'
+    'module.route53'
     # ACM
-    'module.acm.aws_acm_certificate.this'
-    'module.acm.aws_route53_record.cert_validation\[[^]]+\]'
-    'module.ecr.aws_ecr_lifecycle_policy.this\[[^]]+\]'
-    'module.ecr.aws_ecr_repository.this\[[^]]+\]'
-    'module.github_oidc.aws_iam_role.github_actions'
-    'module.github_oidc.aws_iam_role_policy_attachment.attach_admin_policy'
-    'module.github_repo_secrets.github_actions_secret.secrets\[[^]]+\]'
-    'module.github_repo_secrets.github_actions_variable.variables\[[^]]+\]'
+    'module.acm'
+    # 'module.acm.aws_acm_certificate.this'
+    # 'module.acm.aws_route53_record.cert_validation\[[^]]+\]'
+    # 'module.ecr.aws_ecr_lifecycle_policy.this\[[^]]+\]'
+    # 'module.ecr.aws_ecr_repository.this\[[^]]+\]'
+    'module.ecr'
+    'module.repo_ecr_access'
+    #'module.github_oidc.aws_iam_role.github_actions'
+    #'module.github_oidc.aws_iam_role_policy_attachment.attach_admin_policy'
+    #'module.repo_secrets.github_actions_secret.secrets\[[^]]+\]'
+    #'module.repo_secrets.github_actions_variable.variables\[[^]]+\]'
+    'module.repo_secrets'
+
   )
   #echo -e "${CYAN}after building base...${RESET}"
   # Additional patterns for real mode only
