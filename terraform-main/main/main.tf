@@ -460,7 +460,7 @@ module "gitops_bootstrap" {
   
   # Branch details for PR creations
   branch_name_prefix  = var.branch_name_prefix
-  target_branch       = var.argocd_target_revision
+  target_branch       = local.argocd_target_revision
   #target_branch       = var.gitops_target_branch
 }
 
