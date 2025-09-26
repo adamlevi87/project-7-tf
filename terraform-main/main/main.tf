@@ -449,14 +449,14 @@ module "gitops_bootstrap" {
   acm_certificate_arn    = module.acm.this_certificate_arn
   
   # ArgoCD Configuration
-  argocd_namespace = var.argocd_namespace
+  argocd_namespace        = var.argocd_namespace
   argocd_project_yaml     = module.argocd_templates.project_yaml
   argocd_app_of_apps_yaml = module.argocd_templates.app_of_apps_yaml
   
   # Control Variables
-  bootstrap_mode = var.bootstrap_mode
-  update_apps    = var.update_apps
-  auto_merge_pr = var.auto_merge_pr
+  bootstrap_mode  = var.bootstrap_mode
+  update_apps     = var.update_apps
+  auto_merge_pr   = var.auto_merge_pr
   
   # Branch details for PR creations
   branch_name_prefix  = var.branch_name_prefix
