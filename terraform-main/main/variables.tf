@@ -306,10 +306,10 @@ variable "argocd_app_of_apps_path" {
   type        = string
 }
 
-variable "argocd_app_of_apps_target_revision" {
-  description = "Branch or Git reference in the GitOps repository that ArgoCD should track."
-  type        = string
-}
+# variable "argocd_app_of_apps_target_revision" {
+#   description = "Branch or Git reference in the GitOps repository that ArgoCD should track."
+#   type        = string
+# }
 
 variable "argocd_aws_secret_key" {
   description = "Key used to name the argocd application's AWS secret (holds argocd's credentials for the gitops repo"
@@ -490,11 +490,11 @@ variable "branch_name_prefix" {
   default     = "terraform-updates"
 }
 
-variable "gitops_target_branch" {
-  description = "Target branch for pull requests"
-  type        = string
-  default     = "main"
-}
+# variable "gitops_target_branch" {
+#   description = "Target branch for pull requests"
+#   type        = string
+#   default     = "main"
+# }
 
 # Monitoring Configuration
 variable "enable_monitoring" {

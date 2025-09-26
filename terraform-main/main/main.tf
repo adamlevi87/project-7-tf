@@ -407,7 +407,8 @@ module "argocd_templates" {
   github_application_repo     = var.github_application_repo
   environment                 = var.environment
   app_of_apps_path            = var.argocd_app_of_apps_path
-  app_of_apps_target_revision = var.argocd_app_of_apps_target_revision
+  #app_of_apps_target_revision = var.argocd_app_of_apps_target_revision
+  app_of_apps_target_revision = local.argocd_target_revision
 }
 
 module "gitops_bootstrap" {
@@ -440,7 +441,8 @@ module "gitops_bootstrap" {
   frontend_external_dns_hostname  = "${var.frontend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
   frontend_argocd_app_name        = var.frontend_argocd_app_name
   frontend_helm_release_name      = var.frontend_helm_release_name
-  
+  argocd_target_revision          = local.argocd_target_revision
+
   # Shared ALB Configuration
   alb_group_name         = local.alb_group_name
   alb_security_groups    = module.security_groups.joined_security_group_ids
@@ -458,7 +460,8 @@ module "gitops_bootstrap" {
   
   # Branch details for PR creations
   branch_name_prefix  = var.branch_name_prefix
-  target_branch       = var.gitops_target_branch
+  target_branch       = var.argocd_target_revision
+  #target_branch       = var.gitops_target_branch
 }
 
 # the initial app_of_apps sync has been automated

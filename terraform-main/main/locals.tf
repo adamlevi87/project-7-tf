@@ -112,4 +112,11 @@ locals {
             secret_value = config.generate_password ? random_password.generated_passwords[name].result : config.secret_value
         })
     }
+
+    # Returns a value based on what the environment is
+    argocd_target_revision = {
+        prod    = "main"
+        dev     = "dev"
+        staging = "staging"
+    }[var.environment]
 }

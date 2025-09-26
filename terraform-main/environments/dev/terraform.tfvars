@@ -123,7 +123,7 @@ argocd_namespace                    = "argocd"
 argocd_allowed_cidr_blocks          = ["85.65.159.200/32"]
 argocd_base_domain_name             = "argocd"
 argocd_app_of_apps_path             = "apps"
-argocd_app_of_apps_target_revision  = "main"
+#argocd_app_of_apps_target_revision  = "main"
 argocd_aws_secret_key               = "argocd-credentials"
 
 # ================================
@@ -181,7 +181,7 @@ frontend_argocd_app_name = "frontend"
 frontend_helm_release_name = "frontend"
 # From which branch to create a new branch and where to merge back to
 # when creating initial yamls in the gitops repo
-gitops_target_branch = "main"
+#gitops_target_branch = "main"
 
 # ================================
 # Monitoring Configurations  

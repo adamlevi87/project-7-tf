@@ -29,7 +29,7 @@ spec:
   # Multi-source: CHART comes from app repo; VALUES come from gitops repo via ref
   sources:
     - repoURL: https://github.com/${github_org}/${github_application_repo}.git    # chart source
-      targetRevision: main
+      targetRevision: ${argocd_target_revision}
       path: helm/
       helm:
         releaseName: ${helm_release_name}
@@ -38,5 +38,5 @@ spec:
           - $values/environments/dev/manifests/frontend/digest-values.yaml         # <-- digest values (Application Repo)
           - $values/environments/${environment}/manifests/${app_name}/app-values.yaml            # <-- application values (static)
     - repoURL: https://github.com/${github_org}/${github_gitops_repo}.git     # values source
-      targetRevision: main
+      targetRevision: ${argocd_target_revision}
       ref: values

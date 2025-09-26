@@ -139,3 +139,8 @@ variable "github_token" {
   type        = string
   sensitive   = true
 }
+
+variable "argocd_target_revision" {
+  description = "Git branch/revision for apps"
+  type        = string
+}

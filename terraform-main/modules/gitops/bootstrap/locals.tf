@@ -53,6 +53,7 @@ locals {
     github_org                = var.github_org
     github_gitops_repo        = var.github_gitops_repo
     github_application_repo   = var.github_application_repo
+    argocd_target_revision    = var.argocd_target_revision
   }
 
   # Always render these for change detection
