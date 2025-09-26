@@ -10,11 +10,11 @@ locals {
   gitops_repo_url = "https://github.com/${var.github_org}/${var.github_gitops_repo}.git"
   
   # File paths
-  project_yaml_path          = "reference_only/${var.environment}/project/${var.project_tag}.yaml"
-  app_of_apps_yaml_path      = "reference_only/${var.environment}/app_of_apps.yaml"
-  frontend_infra_values_path = "environments/${var.environment}/manifests/frontend/infra-values.yaml"
-  frontend_app_values_path   = "environments/${var.environment}/manifests/frontend/app-values.yaml"
-  frontend_app_path          = "environments/${var.environment}/apps/frontend/application.yaml"
+  project_yaml_path          = "reference_only/project/${var.project_tag}.yaml"
+  app_of_apps_yaml_path      = "reference_only/app_of_apps.yaml"
+  frontend_infra_values_path = "environments/manifests/frontend/infra-values.yaml"
+  frontend_app_values_path   = "environments/manifests/frontend/app-values.yaml"
+  frontend_app_path          = "environments/apps/frontend/application.yaml"
   
   # Template variables for ArgoCD project
   project_template_vars = {
