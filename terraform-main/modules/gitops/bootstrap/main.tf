@@ -37,6 +37,10 @@ rm -rf gitops-repo
 git clone "https://x-access-token:$GITHUB_TOKEN@github.com/$GITHUB_ORG/$GITOPS_REPO.git" gitops-repo
 cd gitops-repo
 
+# Checkout the target branch FIRST
+echo "Checking out target branch: $TARGET_BRANCH"
+git checkout "$TARGET_BRANCH"
+
 # Configure git
 git config user.name "Terraform GitOps"
 git config user.email "terraform@gitops.local"
@@ -119,7 +123,7 @@ fi
 
 echo "Changes detected. Creating PR..."
 
-# Create branch and commit changes
+# Create branch FROM the target branch and commit changes
 git checkout -b "$BRANCH_NAME"
 git add .
 
