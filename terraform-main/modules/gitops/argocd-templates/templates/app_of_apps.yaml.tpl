@@ -22,7 +22,7 @@ spec:
   project: ${project_tag}
   source:
     repoURL: https://github.com/${github_org}/${github_gitops_repo}.git
-    path: environments/${environment}/${app_of_apps_path}
+    path: ${app_of_apps_path}
     targetRevision: ${app_of_apps_target_revision}
     directory:
       recurse: true
