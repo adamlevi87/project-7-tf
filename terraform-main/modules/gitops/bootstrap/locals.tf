@@ -12,9 +12,9 @@ locals {
   # File paths
   project_yaml_path          = "reference_only/project/${var.project_tag}.yaml"
   app_of_apps_yaml_path      = "reference_only/app_of_apps.yaml"
-  frontend_infra_values_path = "environments/manifests/frontend/infra-values.yaml"
-  frontend_app_values_path   = "environments/manifests/frontend/app-values.yaml"
-  frontend_app_path          = "environments/apps/frontend/application.yaml"
+  frontend_infra_values_path = "manifests/frontend/infra-values.yaml"
+  frontend_app_values_path   = "manifests/frontend/app-values.yaml"
+  frontend_app_path          = "apps/frontend/application.yaml"
   
   # Template variables for ArgoCD project
   project_template_vars = {
