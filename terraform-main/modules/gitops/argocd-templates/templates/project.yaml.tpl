@@ -24,6 +24,8 @@ spec:
     - namespace: '*'
       server: https://kubernetes.default.svc
   namespaceResourceWhitelist:
+    - group: "batch"
+      kind: "Job"
     - group: external-secrets.io
       kind: SecretStore
     - group: external-secrets.io
