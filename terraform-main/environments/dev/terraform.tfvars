@@ -174,7 +174,7 @@ update_apps = false
 bootstrap_mode = false
 auto_merge_pr = false
 
-frontend_container_port = 80
+frontend_container_port = 3000
 frontend_base_domain_name = "frontend-app"
 branch_name_prefix  = "terraform-updates"
 frontend_argocd_app_name = "frontend"
