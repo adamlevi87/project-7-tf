@@ -370,6 +370,7 @@ module "frontend" {
 
   kms_key_arn               = module.kms.kms_key_arn
   s3_bucket_arn             = module.s3.bucket_arn
+  ecr_repository_arn       = values(module.ecr.ecr_repository_arns["welcome"])
 
   # EKS related variables
   oidc_provider_arn         = module.eks.oidc_provider_arn

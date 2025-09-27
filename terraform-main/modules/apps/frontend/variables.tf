@@ -39,3 +39,8 @@ variable "kms_key_arn" {
   description = "ARN of the KMS key for S3 bucket encryption"
   type        = string
 }
+
+variable "ecr_repository_arn" {
+  description = "ECR repository ARN that frontend needs access to"
+  type        = string
+}

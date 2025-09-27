@@ -117,6 +117,45 @@ resource "aws_iam_policy" "frontend_kms_access" {
   }
 }
 
+# IAM policy for frontend ECR access (for cosign verification)
+resource "aws_iam_policy" "frontend_ecr_access" {
+  name        = "${var.project_tag}-${var.environment}-frontend-ecr-access"
+  description = "IAM policy for frontend to access ECR for cosign verification"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        # Global ECR permissions (required for authentication)
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken"
+        ]
+        Resource = "*"
+      },
+      {
+        # Repository-specific ECR read permissions
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer", 
+          "ecr:BatchGetImage",
+          "ecr:DescribeImages",
+          "ecr:DescribeRepositories",
+          "ecr:ListImages"
+        ]
+        Resource = var.ecr_repository_arn
+      }
+    ]
+  })
+
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Name        = "${var.project_tag}-${var.environment}-frontend-ecr-policy"
+  }
+}
+
 # Attach S3 access policy
 resource "aws_iam_role_policy_attachment" "frontend_s3_access" {
   role       = aws_iam_role.this.name
@@ -127,4 +166,10 @@ resource "aws_iam_role_policy_attachment" "frontend_s3_access" {
 resource "aws_iam_role_policy_attachment" "frontend_kms_access" {
   role       = aws_iam_role.this.name
   policy_arn = aws_iam_policy.frontend_kms_access.arn
+}
+
+# Attach ECR access policy
+resource "aws_iam_role_policy_attachment" "frontend_ecr_access" {
+  role       = aws_iam_role.this.name
+  policy_arn = aws_iam_policy.frontend_ecr_access.arn
 }
