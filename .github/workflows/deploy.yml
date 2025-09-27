@@ -42,11 +42,11 @@ on:
         default: "self-hosted"
         type: choice
         options:
-          - ubuntu-latest
           # self hosted is a custom label that our runner gets
           # (user-data.sh config.sh part)
           - self-hosted
-
+          - ubuntu-latest
+          
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
 
