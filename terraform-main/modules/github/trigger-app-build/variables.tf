@@ -20,3 +20,8 @@ variable "environment" {
   description = "Environment (dev, staging, prod)"
   type        = string
 }
+
+variable "target_branch" {
+  description = "Git branch to trigger the CI process on"
+  type        = string
+}

@@ -408,7 +408,7 @@ module "argocd_templates" {
   environment                 = var.environment
   app_of_apps_path            = var.argocd_app_of_apps_path
   #app_of_apps_target_revision = var.argocd_app_of_apps_target_revision
-  app_of_apps_target_revision = local.argocd_target_revision
+  app_of_apps_target_revision = local.target_branch
 }
 
 module "gitops_bootstrap" {
@@ -441,7 +441,7 @@ module "gitops_bootstrap" {
   frontend_external_dns_hostname  = "${var.frontend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
   frontend_argocd_app_name        = var.frontend_argocd_app_name
   frontend_helm_release_name      = var.frontend_helm_release_name
-  argocd_target_revision          = local.argocd_target_revision
+  argocd_target_revision          = local.target_branch
 
   # Shared ALB Configuration
   alb_group_name         = local.alb_group_name
@@ -460,7 +460,7 @@ module "gitops_bootstrap" {
   
   # Branch details for PR creations
   branch_name_prefix  = var.branch_name_prefix
-  target_branch       = local.argocd_target_revision
+  target_branch       = local.target_branch
   #target_branch       = var.gitops_target_branch
 }
 
@@ -749,22 +749,23 @@ module "repo_secrets" {
   }
 }
 
-# module "trigger_app_build" {
-#   count = var.bootstrap_mode ? 1 : 0
+module "trigger_app_build" {
+  count = var.bootstrap_mode ? 1 : 0
 
-#   source = "../modules/github/trigger-app-build"
+  source = "../modules/github/trigger-app-build"
   
-#   github_token            = var.github_token
-#   github_org              = var.github_org
-#   github_application_repo = var.github_application_repo
-#   environment             = var.environment
+  github_token            = var.github_token
+  github_org              = var.github_org
+  github_application_repo = var.github_application_repo
+  environment             = var.environment
+  target_branch           = local.target_branch
   
-#   depends_on = [
-#     module.ecr,
-#     module.repo_secrets,
-#     module.repo_ecr_access
-#   ]
-# }
+  depends_on = [
+    module.ecr,
+    module.repo_secrets,
+    module.repo_ecr_access
+  ]
+}
 
 module "ebs_csi_driver" {
   source = "../modules/helm/ebs-csi-driver"

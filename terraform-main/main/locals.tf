@@ -114,7 +114,8 @@ locals {
     }
 
     # Returns a value based on what the environment is
-    argocd_target_revision = {
+    #argocd_target_revision = {
+    target_branch = {
         prod    = "main"
         dev     = "dev"
         staging = "staging"
