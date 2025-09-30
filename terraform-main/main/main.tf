@@ -443,6 +443,7 @@ module "gitops_bootstrap" {
   frontend_argocd_app_name        = var.frontend_argocd_app_name
   frontend_helm_release_name      = var.frontend_helm_release_name
   argocd_target_revision          = local.target_branch
+  frontend_iam_role_arn           = module.frontend.iam_role_arn
 
   # Shared ALB Configuration
   alb_group_name         = local.alb_group_name

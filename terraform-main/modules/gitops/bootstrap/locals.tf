@@ -39,6 +39,7 @@ locals {
     frontend_external_dns_hostname  = var.frontend_external_dns_hostname
     github_org                      = var.github_org
     github_application_repo         = var.github_application_repo
+    frontend_iam_role_arn           = var.frontend_iam_role_arn
   }
   
   #Template variables for frontend Application.yaml

@@ -36,26 +36,26 @@ resource "aws_iam_role" "this" {
   })
 }
 
-resource "kubernetes_namespace" "this" {
-  metadata {
-    name = var.namespace
+# resource "kubernetes_namespace" "this" {
+#   metadata {
+#     name = var.namespace
 
-    labels = {
-      name = var.namespace
-    }
-  }
-}
+#     labels = {
+#       name = var.namespace
+#     }
+#   }
+# }
 
-resource "kubernetes_service_account" "this" {
-  metadata {
-    name      = var.service_account_name
-    namespace = kubernetes_namespace.this.metadata[0].name
+# resource "kubernetes_service_account" "this" {
+#   metadata {
+#     name      = var.service_account_name
+#     namespace = kubernetes_namespace.this.metadata[0].name
 
-    annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.this.arn
-    }
-  }
-}
+#     annotations = {
+#       "eks.amazonaws.com/role-arn" = aws_iam_role.this.arn
+#     }
+#   }
+# }
 
 # IAM policy for frontend s3 access
 resource "aws_iam_policy" "frontend_s3_access" {

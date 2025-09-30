@@ -9,15 +9,17 @@ image:
 
 namespace:
   name: ${frontend_namespace}
-  create: false
+  create: true
 
 service:
   type: "ClusterIP"
   port: 80
 
 serviceAccount:
-  create: false
+  create: true
   name: ${frontend_service_account_name}
+  annotations:
+    eks.amazonaws.com/role-arn: ${frontend_iam_role_arn}
 
 containerPort: ${frontend_container_port}
 

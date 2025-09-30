@@ -122,6 +122,11 @@ variable "frontend_helm_release_name" {
   type        = string
 }
 
+variable "frontend_iam_role_arn" {
+  description = "Application's iam role arn"
+  type        = string
+}
+
 variable "bootstrap_mode" {
   description = "Whether to create all GitOps files (project + applications + values) - bootstrap mode"
   type        = bool
