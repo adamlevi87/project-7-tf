@@ -93,8 +93,29 @@ echo "🔧 Configuring AWS CLI and kubectl..."
 aws configure set region ${aws_region}
 
 # Configure kubectl for main project EKS cluster (this will be set from remote state)
+# if [ ! -z "${cluster_name}" ]; then
+#   aws eks update-kubeconfig --region ${aws_region} --name ${cluster_name}
+# fi
+
+# Configure kubectl for main project EKS cluster (force private endpoint)
+echo "🔧 Configuring kubectl with private endpoint..."
 if [ ! -z "${cluster_name}" ]; then
+  # Get cluster information
+  CLUSTER_INFO=$(aws eks describe-cluster --name ${cluster_name} --region ${aws_region})
+  CLUSTER_ARN=$(echo $CLUSTER_INFO | jq -r '.cluster.arn')
+  
+  # Extract cluster ID and construct private endpoint
+  CLUSTER_ID=$(echo $CLUSTER_ARN | cut -d'/' -f2)
+  PRIVATE_ENDPOINT="https://${CLUSTER_ID}.yl4.${aws_region}.eks.amazonaws.com"
+  
+  echo "Cluster ID: $CLUSTER_ID"
+  echo "Using private endpoint: $PRIVATE_ENDPOINT"
+  
+  # Use standard kubeconfig setup but override endpoint
   aws eks update-kubeconfig --region ${aws_region} --name ${cluster_name}
+  kubectl config set-cluster ${cluster_name} --server=$PRIVATE_ENDPOINT
+  
+  echo "✅ kubectl configured with private endpoint"
 fi
 
 # Create GitHub runner user
