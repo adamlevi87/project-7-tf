@@ -60,5 +60,5 @@ cluster_name = ""
 # SSH Access Configuration
 # ================================
 enable_ssh_access = true  # Set to true if you need to debug runner instances
-ssh_allowed_cidr_blocks = [" 89.139.216.4/32"]  # Uncomment and add your IP if enabling SSH
+ssh_allowed_cidr_blocks = ["89.139.216.4/32"]  # Uncomment and add your IP if enabling SSH
 
