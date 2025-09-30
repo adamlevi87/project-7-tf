@@ -40,6 +40,7 @@ locals {
     github_org                      = var.github_org
     github_application_repo         = var.github_application_repo
     frontend_iam_role_arn           = var.frontend_iam_role_arn
+    aws_region                      = var.aws_region
   }
   
   #Template variables for frontend Application.yaml

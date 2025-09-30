@@ -10,6 +10,11 @@ variable "environment" {
   type        = string
 }
 
+variable "aws_region" {
+  description = "AWS region to deploy resources"
+  type        = string
+}
+
 variable "github_gitops_repo" {
   description = "Name of the GitOps repository"
   type        = string

@@ -364,6 +364,7 @@ module "frontend" {
 
   project_tag        = var.project_tag
   environment        = var.environment
+  aws_region         = var.aws_region
 
   service_account_name      = var.frontend_service_account_name
   namespace                 = var.frontend_service_namespace
