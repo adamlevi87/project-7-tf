@@ -54,7 +54,7 @@ eks_kubernetes_version = "1.33"
 # Whitelist your host + temporary - for github - all IPs - EKS api access
 # this is mainly for Github runners until we move onto a better method- (instance in the VPC)
 # github workflow that runs the TF apply uses kubernetes/helm modules which requires white-listing the runners
-eks_api_allowed_cidr_blocks    = ["85.65.159.200/32"]
+eks_api_allowed_cidr_blocks    = [" 89.139.216.4/32"]
 endpoint_public_access = false
 #endpoint_public_access = true
 
@@ -120,7 +120,7 @@ github_readonly_team = "developers"
 # ================================
 argocd_chart_version                = "8.3.6"
 argocd_namespace                    = "argocd"
-argocd_allowed_cidr_blocks          = ["85.65.159.200/32"]
+argocd_allowed_cidr_blocks          = [" 89.139.216.4/32"]
 argocd_base_domain_name             = "argocd"
 argocd_app_of_apps_path             = "apps"
 #argocd_app_of_apps_target_revision  = "main"
@@ -192,8 +192,8 @@ monitoring_release_name = "kube-prometheus-stack"
 kube_prometheus_stack_chart_version = "77.6.2"
 grafana_base_domain_name = "grafana"
 prometheus_base_domain_name = "prometheus"
-prometheus_allowed_cidr_blocks = ["85.65.159.200/32"]  # Your IP
-grafana_allowed_cidr_blocks    = ["85.65.159.200/32"]
+prometheus_allowed_cidr_blocks = [" 89.139.216.4/32"]  # Your IP
+grafana_allowed_cidr_blocks    = [" 89.139.216.4/32"]
 enable_dex_metrics = true
 grafana_admin_password = "admin123"
 #  = "admin123"  # Change this!
