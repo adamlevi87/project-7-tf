@@ -23,9 +23,6 @@ spec:
   destinations:
     - namespace: '*'
       server: https://kubernetes.default.svc
-  clusterResourceWhitelist:
-    - group: ""
-      kind: Namespace
   namespaceResourceWhitelist:
     - group: "batch"
       kind: "Job"
@@ -47,6 +44,8 @@ spec:
       kind: "Application"
     - group: "autoscaling"
       kind: "HorizontalPodAutoscaler"
-  clusterResourceWhitelist: []
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
   orphanedResources:
     warn: true
