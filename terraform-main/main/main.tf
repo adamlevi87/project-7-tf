@@ -364,7 +364,6 @@ module "frontend" {
 
   project_tag        = var.project_tag
   environment        = var.environment
-  aws_region         = var.aws_region
 
   service_account_name      = var.frontend_service_account_name
   namespace                 = var.frontend_service_namespace
@@ -431,6 +430,7 @@ module "gitops_bootstrap" {
   # Project Configuration
   project_tag   = var.project_tag
   environment   = var.environment
+  aws_region    = var.aws_region
   
   # ECR Repository URLs
   ecr_frontend_repo_url = module.ecr.ecr_repository_urls["welcome"]
