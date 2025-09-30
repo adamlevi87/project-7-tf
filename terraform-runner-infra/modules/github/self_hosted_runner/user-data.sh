@@ -106,7 +106,7 @@ if [ ! -z "${cluster_name}" ]; then
   
   # Extract cluster ID and construct private endpoint
   CLUSTER_ID=$(echo $CLUSTER_ARN | cut -d'/' -f2)
-  PRIVATE_ENDPOINT="https://${CLUSTER_ID}.yl4.${aws_region}.eks.amazonaws.com"
+  PRIVATE_ENDPOINT="https://$${CLUSTER_ID}.yl4.${aws_region}.eks.amazonaws.com"
   
   echo "Cluster ID: $CLUSTER_ID"
   echo "Using private endpoint: $PRIVATE_ENDPOINT"
