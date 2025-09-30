@@ -33,6 +33,8 @@ spec:
     - group: ""
       kind: Secret
     - group: ""
+      kind: Namespace  
+    - group: ""
       kind: ServiceAccount
     - group: networking.k8s.io
       kind: Ingress
